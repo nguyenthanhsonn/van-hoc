@@ -1,10 +1,4 @@
-import { NavItem, SidebarSection } from "@/types/navigation";
-
-export const MARKETING_NAV_ITEMS: NavItem[] = [
-  { title: "Trang chủ", href: "/" },
-  { title: "Giới thiệu", href: "/about" },
-  { title: "Bảng điều khiển", href: "/dashboard" },
-];
+import { SidebarSection } from "@/types/navigation";
 
 export const DASHBOARD_SECTIONS: SidebarSection[] = [
   {

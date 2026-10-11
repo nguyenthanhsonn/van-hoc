@@ -179,9 +179,7 @@ export function DestinationLabel({
           y={cardY + 12}
           width={CARD_W - 28}
           height={CARD_H - 24}
-          style={{ overflow: "hidden" }}
         >
-          {/* @ts-ignore */}
           <div
             style={{
               fontFamily: "var(--font-geist-sans), 'Segoe UI', system-ui, sans-serif",

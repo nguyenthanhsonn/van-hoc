@@ -1,5 +1,3 @@
-import { ComponentType } from "react";
-
 export interface NavItem {
   title: string;
   href: string;
