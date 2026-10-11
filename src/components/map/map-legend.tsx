@@ -91,33 +91,105 @@ export function MapLegend({
   onItemHover,
   onItemClick,
 }: MapLegendProps) {
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  if (isCollapsed) {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          bottom: "1.5rem",
+          right: "1.5rem",
+          zIndex: 30,
+        }}
+      >
+        <button
+          onClick={() => setIsCollapsed(false)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            background: "rgba(245, 222, 179, 0.9)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(180, 140, 80, 0.5)",
+            borderRadius: "0.75rem",
+            padding: "0.4rem 0.75rem",
+            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.25)",
+            color: "#8B6914",
+            fontWeight: 700,
+            fontSize: "0.75rem",
+            cursor: "pointer",
+          }}
+        >
+          <span>🧭 Chú giải</span>
+          <span
+            style={{
+              fontSize: "0.65rem",
+              background: "#8B6914",
+              color: "#fff",
+              borderRadius: "999px",
+              padding: "0.1rem 0.4rem",
+            }}
+          >
+            {destinations.length}
+          </span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
         position: "absolute",
-        bottom: "12rem",
-        right: "2rem",
+        bottom: "1.5rem",
+        right: "1.5rem",
         zIndex: 30,
-        background: "rgba(245, 222, 179, 0.75)",
+        background: "rgba(245, 222, 179, 0.85)",
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(180, 140, 80, 0.4)",
         borderRadius: "1rem",
-        padding: "0.875rem",
-        boxShadow: "0 4px 24px rgba(120, 80, 20, 0.15)",
+        padding: "0.75rem 0.875rem",
+        boxShadow: "0 4px 24px rgba(120, 80, 20, 0.2)",
       }}
     >
-      <p
+      <div
         style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           margin: "0 0 0.5rem 0",
-          fontSize: "0.65rem",
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "#8B6914",
         }}
       >
-        Chú giải
-      </p>
+        <p
+          style={{
+            margin: 0,
+            fontSize: "0.65rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "#8B6914",
+          }}
+        >
+          Chú giải ({destinations.length} điểm)
+        </p>
+        <button
+          onClick={() => setIsCollapsed(true)}
+          title="Thu gọn"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#8B6914",
+            cursor: "pointer",
+            fontSize: "0.75rem",
+            padding: "0 0.25rem",
+            opacity: 0.75,
+            fontWeight: 700,
+          }}
+        >
+          ✕
+        </button>
+      </div>
       <div
         style={{
           display: "grid",

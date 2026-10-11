@@ -80,6 +80,7 @@ export function DestinationLabel({
           opacity: badgeOpacity,
           transition: "opacity 280ms ease",
           pointerEvents: "none",
+          filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.65))",
         }}
       >
         {!isHighlighted && (
