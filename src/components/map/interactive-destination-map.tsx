@@ -11,7 +11,7 @@ import styles from "./map.module.css";
 
 function getIsMobile() {
   if (typeof window === "undefined") return false;
-  return window.matchMedia("(max-width: 639px)").matches;
+  return window.matchMedia("(max-width: 768px)").matches;
 }
 
 // ─── Actual pixel dimensions of public/images/coastal-map-ai-hd.jpg ─────────
@@ -38,9 +38,9 @@ export function InteractiveDestinationMap({
   const [isMobile, setIsMobile] = useState<boolean>(getIsMobile);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Subscribe to viewport resize only (no setState on initial mount)
+  // Subscribe to viewport resize only
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 639px)");
+    const mq = window.matchMedia("(max-width: 768px)");
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
@@ -66,17 +66,40 @@ export function InteractiveDestinationMap({
   return (
     <div
       ref={wrapperRef}
-      style={{ position: "relative", width: "100%", background: "#050810" }}
+      style={{
+        position: "relative",
+        width: "100vw",
+        height: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#050810",
+        overflow: "hidden",
+      }}
     >
       {/* ── SVG map canvas ─────────────────────────────────────────────── */}
       <div
         className={styles.mapIntroWrapper}
-        style={{ width: "100%", lineHeight: 0 }}
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          lineHeight: 0,
+        }}
       >
         <svg
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", height: "auto", display: "block" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            maxHeight: "100dvh",
+            maxWidth: "100vw",
+            display: "block",
+            objectFit: "contain",
+          }}
           aria-label="Bản đồ tương tác làng ven biển Phan Rí"
           role="img"
           onClick={handleSvgClick}
@@ -136,6 +159,7 @@ export function InteractiveDestinationMap({
               isActive={activeId === dest.id}
               isAnyHovered={hoveredId !== null || activeId !== null}
               staggerIndex={i}
+              isMobile={isMobile}
               onMouseEnter={() => setHovered(dest.id)}
               onMouseLeave={() => setHovered(null)}
               onClick={() => setActive(dest.id)}
@@ -144,15 +168,83 @@ export function InteractiveDestinationMap({
         </svg>
       </div>
 
-      {/* ── Legend (chú giải góc trái) ─────────────────────────────── */}
+      {/* ── Mobile Quick-Select Chips Bar (khi chưa mở modal chi tiết) ── */}
+      {isMobile && !activeDestination && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "max(1rem, env(safe-area-inset-bottom, 1rem))",
+            left: "0.75rem",
+            right: "0.75rem",
+            zIndex: 30,
+            display: "flex",
+            gap: "0.5rem",
+            overflowX: "auto",
+            paddingBottom: "4px",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          {mapDestinations.map((dest) => {
+            const isActive = hoveredId === dest.id || activeId === dest.id;
+            return (
+              <button
+                key={dest.id}
+                onClick={() => setActive(dest.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.45rem",
+                  background: isActive ? `${dest.color}35` : "rgba(8, 12, 24, 0.85)",
+                  backdropFilter: "blur(12px)",
+                  border: `1px solid ${isActive ? dest.color : "rgba(255, 255, 255, 0.15)"}`,
+                  borderRadius: "999px",
+                  padding: "0.4rem 0.75rem",
+                  color: "#fff",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  boxShadow: isActive ? `0 0 12px ${dest.color}66` : "0 4px 12px rgba(0, 0, 0, 0.4)",
+                  transition: "all 200ms ease",
+                }}
+              >
+                <span
+                  style={{
+                    width: "1.25rem",
+                    height: "1.25rem",
+                    borderRadius: "50%",
+                    background: dest.color,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.65rem",
+                    fontWeight: 800,
+                    color: "#fff",
+                  }}
+                >
+                  {dest.order}
+                </span>
+                <span>{dest.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Legend (chú giải góc dưới / modal mobile) ───────────────── */}
       <MapLegend
         destinations={mapDestinations}
         hoveredId={hoveredId}
         activeId={activeId}
+        isMobile={isMobile}
         onItemHover={setHovered}
+        onItemClick={setActive}
       />
 
-      {/* ── Detail panel ──────────────────────────────────────────────── */}
+      {/* ── Detail panel (bottom sheet on mobile, slide panel on desktop) ── */}
       {activeDestination && (
         <DestinationDetailPanel
           destination={activeDestination}

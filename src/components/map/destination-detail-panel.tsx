@@ -21,48 +21,93 @@ export function DestinationDetailPanel({
   const panelClass = isMobile ? styles.panelSlideBottom : styles.panelSlideRight;
 
   return (
-    <div
-      className={panelClass}
-      style={{
-        position: "absolute",
-        ...(isMobile
-          ? { bottom: 0, left: 0, right: 0, zIndex: 40 }
-          : { top: "50%", right: "1.5rem", transform: "translateY(-50%)", width: "22rem", zIndex: 40 }),
-      }}
-    >
+    <>
+      {/* Mobile backdrop */}
+      {isMobile && (
+        <div
+          onClick={onClose}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(4px)",
+            zIndex: 45,
+          }}
+          aria-hidden="true"
+        />
+      )}
+
       <div
+        className={panelClass}
         style={{
-          background: "rgba(8, 10, 20, 0.92)",
-          backdropFilter: "blur(20px)",
-          border: `1px solid ${color}55`,
-          borderRadius: isMobile ? "1.5rem 1.5rem 0 0" : "1.5rem",
-          padding: "1.5rem",
-          color: "#fff",
-          boxShadow: `0 0 40px ${color}30, 0 20px 60px rgba(0,0,0,0.6)`,
-          position: "relative",
+          position: "absolute",
+          ...(isMobile
+            ? {
+                bottom: 0,
+                left: 0,
+                right: 0,
+                zIndex: 50,
+                maxHeight: "75dvh",
+              }
+            : {
+                top: "50%",
+                right: "1.5rem",
+                transform: "translateY(-50%)",
+                width: "22rem",
+                zIndex: 40,
+                maxHeight: "85vh",
+              }),
+          overflowY: "auto",
         }}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          aria-label="Đóng chi tiết"
+        <div
           style={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            background: "rgba(255,255,255,0.1)",
-            border: "none",
-            borderRadius: "0.5rem",
-            padding: "0.375rem",
-            cursor: "pointer",
-            color: "#cbd5e1",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            background: "rgba(8, 10, 20, 0.94)",
+            backdropFilter: "blur(24px)",
+            border: `1px solid ${color}66`,
+            borderRadius: isMobile ? "1.5rem 1.5rem 0 0" : "1.5rem",
+            padding: isMobile ? "1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom, 0px))" : "1.5rem",
+            color: "#fff",
+            boxShadow: `0 0 40px ${color}35, 0 20px 60px rgba(0,0,0,0.75)`,
+            position: "relative",
           }}
         >
-          <X size={16} />
-        </button>
+          {/* Mobile drag handle bar */}
+          {isMobile && (
+            <div
+              style={{
+                width: "2.5rem",
+                height: "4px",
+                borderRadius: "999px",
+                background: "rgba(255, 255, 255, 0.25)",
+                margin: "-0.25rem auto 1rem",
+              }}
+            />
+          )}
+
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            aria-label="Đóng chi tiết"
+            style={{
+              position: "absolute",
+              top: isMobile ? "1.25rem" : "1rem",
+              right: isMobile ? "1.25rem" : "1rem",
+              background: "rgba(255, 255, 255, 0.12)",
+              border: "none",
+              borderRadius: "0.5rem",
+              width: "2rem",
+              height: "2rem",
+              cursor: "pointer",
+              color: "#cbd5e1",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              touchAction: "manipulation",
+            }}
+          >
+            <X size={18} />
+          </button>
 
         {/* Badge + name */}
         <div
@@ -141,5 +186,6 @@ export function DestinationDetailPanel({
         </p>
       </div>
     </div>
+    </>
   );
 }

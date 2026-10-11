@@ -17,10 +17,14 @@ export function FullscreenDestinationMap() {
     <main
       style={{
         width: "100vw",
+        height: "100dvh",
         minHeight: "100vh",
         background: "#050810",
         position: "relative",
         overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <InteractiveDestinationMap debug={debug} />

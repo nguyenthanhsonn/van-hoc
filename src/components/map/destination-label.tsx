@@ -10,6 +10,7 @@ interface DestinationLabelProps {
   isActive: boolean;
   isAnyHovered?: boolean;
   staggerIndex: number;
+  isMobile?: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onClick: () => void;
@@ -28,6 +29,7 @@ export function DestinationLabel({
   isActive,
   isAnyHovered = false,
   staggerIndex,
+  isMobile = false,
   onMouseEnter,
   onMouseLeave,
   onClick,
@@ -37,6 +39,11 @@ export function DestinationLabel({
     color, anchor, circle, side = 1,
   } = destination;
   const isHighlighted = isHovered || isActive;
+
+  // ── Responsive badge & hit target size ─────────────────────────────────────
+  const currentBadgeR = isMobile ? 38 : BADGE_R;
+  const currentFontSize = isMobile ? "24" : "14";
+  const hitAreaRadius = isHighlighted ? (circle.r ?? 100) : (isMobile ? 100 : BADGE_R + 6);
 
   // ── Tọa độ local (gốc = anchor) ────────────────────────────────────────────
   const circX = circle.cx - anchor.x;
@@ -62,8 +69,8 @@ export function DestinationLabel({
   // Path nhánh L: viền circle → elbow → cạnh thẻ
   const branchPath = `M ${brX} ${brY} L ${elX} ${elY} L ${elX} ${neckY}`;
 
-  // ── Opacity badge (ẩn khi highlight) ──────────────────────────────────────
-  const badgeOpacity = isHighlighted ? 0 : isAnyHovered ? 0.4 : 1;
+  // ── Opacity badge (ẩn khi highlight trên desktop) ─────────────────────────
+  const badgeOpacity = (!isMobile && isHighlighted) ? 0 : isAnyHovered ? 0.45 : 1;
 
   return (
     <g
@@ -74,7 +81,7 @@ export function DestinationLabel({
       }}
       className={styles.labelIntro}
     >
-      {/* ── Badge số (ẩn khi hover) ──────────────────────────────────────── */}
+      {/* ── Badge số ────────────────────────────────────────────────────── */}
       <g
         style={{
           opacity: badgeOpacity,
@@ -83,17 +90,20 @@ export function DestinationLabel({
           filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.65))",
         }}
       >
-        {!isHighlighted && (
+        {(!isHighlighted || isMobile) && (
           <circle
-            cx={circX} cy={circY} r={BADGE_R + 4}
-            fill="none" stroke={color} strokeWidth="2" opacity="0.55"
+            cx={circX} cy={circY} r={currentBadgeR + (isMobile ? 8 : 4)}
+            fill="none" stroke={color} strokeWidth={isMobile ? "3" : "2"} opacity="0.6"
             className={styles.pulseRing}
           />
         )}
-        <circle cx={circX} cy={circY} r={BADGE_R} fill={color} stroke="#fff" strokeWidth="2" />
+        <circle
+          cx={circX} cy={circY} r={currentBadgeR}
+          fill={color} stroke="#fff" strokeWidth={isMobile ? "3" : "2"}
+        />
         <text
-          x={circX} y={circY + 5.5} textAnchor="middle" dominantBaseline="middle" fill="#fff"
-          fontSize="14" fontWeight="800"
+          x={circX} y={circY + (isMobile ? 8 : 5.5)} textAnchor="middle" dominantBaseline="middle" fill="#fff"
+          fontSize={currentFontSize} fontWeight="800"
           fontFamily="var(--font-geist-sans), system-ui, sans-serif"
           style={{ userSelect: "none", pointerEvents: "none" }}
         >
@@ -102,131 +112,136 @@ export function DestinationLabel({
       </g>
 
       {/* Hit area:
-          - Khi chưa highlight: chỉ bắt hover tại số (r = BADGE_R + 6) -> hover vô số mới hiện!
-          - Khi đã highlight: mở rộng ra toàn bộ vòng tròn (r = circR) -> đưa chuột ra ngoài là mất!
+          - Trên mobile: vùng chạm mở rộng (r = 100) để ngón tay dễ chạm trúng
+          - Trên desktop: r = BADGE_R + 6 khi bình thường, mở rộng khi highlight
       */}
       <circle
         cx={circX}
         cy={circY}
-        r={isHighlighted ? circR : BADGE_R + 6}
+        r={hitAreaRadius}
         fill="transparent"
         style={{ pointerEvents: "all", cursor: "pointer" }}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onClick={onClick}
-      />
-
-      {/* ── Nhánh chữ L – line drawing animation qua strokeDashoffset ──────── */}
-      {/*
-        Dùng pathLength="1" + strokeDasharray="1" → normalize path.
-        Transition strokeDashoffset: 1→0 khi hover (vẽ ra từ từ).
-      */}
-      <path
-        d={branchPath}
-        fill="none"
-        stroke={color}
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        pathLength="1"
-        style={{
-          strokeDasharray: "1",
-          strokeDashoffset: isHighlighted ? 0 : 1,
-          transition: isHighlighted
-            ? "stroke-dashoffset 0.55s cubic-bezier(0.4,0,0.2,1)"
-            : "none",
-          filter: `drop-shadow(0 0 5px ${color}99)`,
-          pointerEvents: "none",
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick();
         }}
       />
 
-      {/* Chấm tròn tại điểm bắt đầu nhánh */}
-      <circle
-        cx={brX} cy={brY} r={5.5}
-        fill={color} stroke="#fff" strokeWidth="1.8"
-        style={{
-          opacity: isHighlighted ? 1 : 0,
-          transition: isHighlighted ? "opacity 200ms ease 0.3s" : "opacity 100ms ease",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* ── Thẻ thông tin ─────────────────────────────────────────────────── */}
-      <g
-        style={{
-          opacity: isHighlighted ? 1 : 0,
-          transition: isHighlighted
-            ? "opacity 280ms ease 0.4s"   // xuất hiện SAU khi nhánh gần xong
-            : "opacity 120ms ease",
-          pointerEvents: "none",
-        }}
-        aria-hidden={!isHighlighted}
-      >
-        {/* Nền thẻ – solid, không trong suốt */}
-        <rect
-          x={cardX} y={cardY}
-          width={CARD_W} height={CARD_H}
-          rx={14} ry={14}
-          fill="#fffdf5"
-          fillOpacity={1}
-          stroke={color}
-          strokeWidth="2.5"
-          style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.45))" }}
-        />
-
-        {/* Nội dung HTML qua foreignObject */}
-        <foreignObject
-          x={cardX + 14}
-          y={cardY + 12}
-          width={CARD_W - 28}
-          height={CARD_H - 24}
-        >
-          <div
+      {/* ── Nhánh chữ L & Thẻ thông tin (chỉ render trên desktop/tablet lớn, mobile dùng detail bottom sheet) ── */}
+      {!isMobile && (
+        <>
+          <path
+            d={branchPath}
+            fill="none"
+            stroke={color}
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            pathLength="1"
             style={{
-              fontFamily: "var(--font-geist-sans), 'Segoe UI', system-ui, sans-serif",
-              width: `${CARD_W - 28}px`,
-              height: `${CARD_H - 24}px`,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
+              strokeDasharray: "1",
+              strokeDashoffset: isHighlighted ? 0 : 1,
+              transition: isHighlighted
+                ? "stroke-dashoffset 0.55s cubic-bezier(0.4,0,0.2,1)"
+                : "none",
+              filter: `drop-shadow(0 0 5px ${color}99)`,
+              pointerEvents: "none",
             }}
+          />
+
+          {/* Chấm tròn tại điểm bắt đầu nhánh */}
+          <circle
+            cx={brX} cy={brY} r={5.5}
+            fill={color} stroke="#fff" strokeWidth="1.8"
+            style={{
+              opacity: isHighlighted ? 1 : 0,
+              transition: isHighlighted ? "opacity 200ms ease 0.3s" : "opacity 100ms ease",
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* ── Thẻ thông tin ─────────────────────────────────────────────────── */}
+          <g
+            style={{
+              opacity: isHighlighted ? 1 : 0,
+              transition: isHighlighted
+                ? "opacity 280ms ease 0.4s"
+                : "opacity 120ms ease",
+              pointerEvents: "none",
+            }}
+            aria-hidden={!isHighlighted}
           >
-            {/* Tiêu đề */}
-            <div style={{ lineHeight: 1.25, flexShrink: 0 }}>
-              <span style={{ fontSize: "20px", fontWeight: 700, color }}>
-                {name}
-              </span>
-              {subtitle && (
-                <span style={{ fontSize: "18px", fontWeight: 400, color: "#5a3e28" }}>
-                  {" "}– {subtitle}
-                </span>
-              )}
-            </div>
+            {/* Nền thẻ – solid, không trong suốt */}
+            <rect
+              x={cardX} y={cardY}
+              width={CARD_W} height={CARD_H}
+              rx={14} ry={14}
+              fill="#fffdf5"
+              fillOpacity={1}
+              stroke={color}
+              strokeWidth="2.5"
+              style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.45))" }}
+            />
 
-            {/* Vị trí */}
-            <div style={{ fontSize: "15px", color: "#7a5c3a", lineHeight: 1.4, flexShrink: 0 }}>
-              <span style={{ fontWeight: 700 }}>Vị trí:</span> {location}
-            </div>
-
-            {/* Câu chuyện */}
-            <div
-              style={{
-                fontSize: "15px",
-                color: "#5a3e28",
-                lineHeight: 1.5,
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                flex: 1,
-              }}
+            {/* Nội dung HTML qua foreignObject */}
+            <foreignObject
+              x={cardX + 14}
+              y={cardY + 12}
+              width={CARD_W - 28}
+              height={CARD_H - 24}
             >
-              {story}
-            </div>
-          </div>
-        </foreignObject>
-      </g>
+              <div
+                style={{
+                  fontFamily: "var(--font-geist-sans), 'Segoe UI', system-ui, sans-serif",
+                  width: `${CARD_W - 28}px`,
+                  height: `${CARD_H - 24}px`,
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                }}
+              >
+                {/* Tiêu đề */}
+                <div style={{ lineHeight: 1.25, flexShrink: 0 }}>
+                  <span style={{ fontSize: "20px", fontWeight: 700, color }}>
+                    {name}
+                  </span>
+                  {subtitle && (
+                    <span style={{ fontSize: "18px", fontWeight: 400, color: "#5a3e28" }}>
+                      {" "}– {subtitle}
+                    </span>
+                  )}
+                </div>
+
+                {/* Vị trí */}
+                <div style={{ fontSize: "15px", color: "#7a5c3a", lineHeight: 1.4, flexShrink: 0 }}>
+                  <span style={{ fontWeight: 700 }}>Vị trí:</span> {location}
+                </div>
+
+                {/* Câu chuyện */}
+                <div
+                  style={{
+                    fontSize: "15px",
+                    color: "#5a3e28",
+                    lineHeight: 1.5,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    flex: 1,
+                  }}
+                >
+                  {story}
+                </div>
+              </div>
+            </foreignObject>
+          </g>
+        </>
+      )}
     </g>
   );
 }

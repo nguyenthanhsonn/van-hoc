@@ -80,6 +80,7 @@ interface MapLegendProps {
   destinations: MapDestination[];
   hoveredId: string | null;
   activeId: string | null;
+  isMobile?: boolean;
   onItemHover: (id: string | null) => void;
   onItemClick?: (id: string) => void;
 }
@@ -88,19 +89,22 @@ export function MapLegend({
   destinations,
   hoveredId,
   activeId,
+  isMobile = false,
   onItemHover,
   onItemClick,
 }: MapLegendProps) {
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [collapsedByUser, setCollapsedByUser] = React.useState<boolean | null>(null);
+  const isCollapsed = collapsedByUser !== null ? collapsedByUser : isMobile;
+  const setIsCollapsed = (val: boolean) => setCollapsedByUser(val);
 
   if (isCollapsed) {
     return (
       <div
         style={{
           position: "absolute",
-          bottom: "1.5rem",
-          right: "1.5rem",
-          zIndex: 30,
+          ...(isMobile
+            ? { top: "1rem", right: "1rem", zIndex: 35 }
+            : { bottom: "1.5rem", right: "1.5rem", zIndex: 30 }),
         }}
       >
         <button
@@ -108,17 +112,18 @@ export function MapLegend({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.4rem",
-            background: "rgba(245, 222, 179, 0.9)",
-            backdropFilter: "blur(12px)",
+            gap: "0.45rem",
+            background: "rgba(245, 222, 179, 0.92)",
+            backdropFilter: "blur(14px)",
             border: "1px solid rgba(180, 140, 80, 0.5)",
-            borderRadius: "0.75rem",
-            padding: "0.4rem 0.75rem",
-            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.25)",
+            borderRadius: "999px",
+            padding: isMobile ? "0.45rem 0.85rem" : "0.4rem 0.75rem",
+            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.35)",
             color: "#8B6914",
             fontWeight: 700,
-            fontSize: "0.75rem",
+            fontSize: isMobile ? "0.8rem" : "0.75rem",
             cursor: "pointer",
+            touchAction: "manipulation",
           }}
         >
           <span>🧭 Chú giải</span>
@@ -138,6 +143,161 @@ export function MapLegend({
     );
   }
 
+  // Mobile expanded: centered modal with dark backdrop
+  if (isMobile) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.65)",
+          backdropFilter: "blur(6px)",
+          zIndex: 50,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "1rem",
+        }}
+        onClick={() => setIsCollapsed(true)}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: "rgba(245, 222, 179, 0.96)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(180, 140, 80, 0.5)",
+            borderRadius: "1.25rem",
+            padding: "1.25rem",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+            width: "100%",
+            maxWidth: "340px",
+            maxHeight: "80dvh",
+            overflowY: "auto",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "0.75rem",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8B6914",
+              }}
+            >
+              Chú giải ({destinations.length} điểm)
+            </p>
+            <button
+              onClick={() => setIsCollapsed(true)}
+              style={{
+                background: "rgba(139, 105, 20, 0.15)",
+                border: "none",
+                borderRadius: "50%",
+                width: "1.75rem",
+                height: "1.75rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#8B6914",
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: "0.85rem",
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: "0.5rem",
+            }}
+          >
+            {destinations.map((dest) => {
+              const isActive = hoveredId === dest.id || activeId === dest.id;
+              return (
+                <div
+                  key={dest.id}
+                  onClick={() => {
+                    onItemClick?.(dest.id);
+                    setIsCollapsed(true);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    background: isActive ? `${dest.color}25` : "rgba(255, 255, 255, 0.5)",
+                    border: `1px solid ${isActive ? dest.color : "rgba(180, 140, 80, 0.25)"}`,
+                    borderRadius: "0.6rem",
+                    padding: "0.45rem 0.6rem",
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "1.8rem",
+                      height: "1.8rem",
+                      borderRadius: "50%",
+                      background: dest.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0.25rem",
+                      flexShrink: 0,
+                      boxShadow: `0 0 6px ${dest.color}88`,
+                    }}
+                  >
+                    {ICONS[dest.id] ?? (
+                      <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#fff" }}>
+                        {dest.order}
+                      </span>
+                    )}
+                  </span>
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "0.8rem",
+                        fontWeight: 700,
+                        color: "#2C1810",
+                        display: "block",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {dest.order}. {dest.name}
+                    </span>
+                    {dest.subtitle && (
+                      <span
+                        style={{
+                          fontSize: "0.7rem",
+                          color: "#7A5028",
+                          display: "block",
+                          marginTop: "0.15rem",
+                        }}
+                      >
+                        {dest.subtitle}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop expanded legend
   return (
     <div
       style={{
@@ -145,12 +305,12 @@ export function MapLegend({
         bottom: "1.5rem",
         right: "1.5rem",
         zIndex: 30,
-        background: "rgba(245, 222, 179, 0.85)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid rgba(180, 140, 80, 0.4)",
+        background: "rgba(245, 222, 179, 0.88)",
+        backdropFilter: "blur(14px)",
+        border: "1px solid rgba(180, 140, 80, 0.45)",
         borderRadius: "1rem",
         padding: "0.75rem 0.875rem",
-        boxShadow: "0 4px 24px rgba(120, 80, 20, 0.2)",
+        boxShadow: "0 4px 24px rgba(120, 80, 20, 0.25)",
       }}
     >
       <div
