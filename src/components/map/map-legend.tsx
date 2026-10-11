@@ -1,0 +1,202 @@
+"use client";
+
+import React from "react";
+import type { MapDestination } from "@/types/map";
+
+// SVG icons keyed by destination id
+const ICONS: Record<string, React.ReactNode> = {
+  "po-nagar": (
+    // Temple / pagoda
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="100%" height="100%">
+      <path d="M12 2l2 4h-4l2-4z" fill="white" stroke="none"/>
+      <rect x="9" y="6" width="6" height="3" fill="white" stroke="none"/>
+      <path d="M7 9l1 3H6l6-1 6 1h-2l1-3" fill="white" stroke="none"/>
+      <rect x="5" y="12" width="14" height="2" fill="white" stroke="none"/>
+      <rect x="10" y="14" width="4" height="6" fill="white" stroke="none"/>
+      <rect x="4" y="20" width="16" height="2" fill="white" stroke="none"/>
+    </svg>
+  ),
+  "elder-house": (
+    // House
+    <svg viewBox="0 0 24 24" fill="white" width="100%" height="100%">
+      <path d="M3 12L12 4l9 8v8a1 1 0 01-1 1H4a1 1 0 01-1-1v-8z"/>
+      <rect x="9" y="15" width="6" height="5" fill="rgba(0,0,0,0.25)" rx="1"/>
+    </svg>
+  ),
+  "yang-patao": (
+    // Mountain
+    <svg viewBox="0 0 24 24" fill="white" width="100%" height="100%">
+      <path d="M3 20l6-10 3 5 2-3 7 8H3z"/>
+      <circle cx="17" cy="6" r="2" fill="white"/>
+    </svg>
+  ),
+  "community-house": (
+    // Traditional house / klaang
+    <svg viewBox="0 0 24 24" fill="white" width="100%" height="100%">
+      <path d="M2 20h20v-2H2v2z"/>
+      <path d="M4 18V12l8-8 8 8v6H4z"/>
+      <path d="M10 18v-5h4v5h-4z" fill="rgba(0,0,0,0.25)"/>
+      <path d="M3 12l9-9 9 9" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1"/>
+    </svg>
+  ),
+  "phan-ri-harbor": (
+    // Wave / sea
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" width="100%" height="100%">
+      <path d="M2 12c1.5-3 3-3 4.5 0s3 3 4.5 0 3-3 4.5 0 3 3 4.5 0"/>
+      <path d="M2 17c1.5-3 3-3 4.5 0s3 3 4.5 0 3-3 4.5 0 3 3 4.5 0"/>
+      <path d="M2 7c1.5-3 3-3 4.5 0s3 3 4.5 0 3-3 4.5 0 3 3 4.5 0"/>
+    </svg>
+  ),
+  "wedding-house": (
+    // Ring / wedding
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="100%" height="100%">
+      <circle cx="12" cy="12" r="6"/>
+      <circle cx="12" cy="12" r="3" fill="white" stroke="none" opacity="0.3"/>
+      <path d="M9 6l-2-3h10l-2 3" stroke="white" strokeWidth="1.5"/>
+    </svg>
+  ),
+  "festival-yard": (
+    // Festival / drum & music
+    <svg viewBox="0 0 24 24" fill="white" width="100%" height="100%">
+      <path d="M8 3h8l2 4H6L8 3z"/>
+      <rect x="5" y="7" width="14" height="8" rx="2"/>
+      <rect x="10" y="15" width="4" height="4"/>
+      <rect x="7" y="19" width="10" height="2" rx="1"/>
+    </svg>
+  ),
+  "terraced-field": (
+    // Farming / terraced field
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" width="100%" height="100%">
+      <path d="M3 18h18"/>
+      <path d="M5 14h14"/>
+      <path d="M7 10h10"/>
+      <path d="M9 6h6"/>
+      <path d="M12 6v12" strokeWidth="1" opacity="0.5"/>
+    </svg>
+  ),
+};
+
+interface MapLegendProps {
+  destinations: MapDestination[];
+  hoveredId: string | null;
+  activeId: string | null;
+  onItemHover: (id: string | null) => void;
+  onItemClick?: (id: string) => void;
+}
+
+export function MapLegend({
+  destinations,
+  hoveredId,
+  activeId,
+  onItemHover,
+  onItemClick,
+}: MapLegendProps) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "12rem",
+        right: "2rem",
+        zIndex: 30,
+        background: "rgba(245, 222, 179, 0.75)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(180, 140, 80, 0.4)",
+        borderRadius: "1rem",
+        padding: "0.875rem",
+        boxShadow: "0 4px 24px rgba(120, 80, 20, 0.15)",
+      }}
+    >
+      <p
+        style={{
+          margin: "0 0 0.5rem 0",
+          fontSize: "0.65rem",
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: "#8B6914",
+        }}
+      >
+        Chú giải
+      </p>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "0.3rem 0.75rem",
+        }}
+      >
+        {destinations.map((dest) => {
+          const isActive = hoveredId === dest.id || activeId === dest.id;
+          return (
+            <div
+              key={dest.id}
+              onMouseEnter={() => onItemHover(dest.id)}
+              onMouseLeave={() => onItemHover(null)}
+              onClick={() => onItemClick?.(dest.id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                background: isActive ? `${dest.color}30` : "transparent",
+                border: `1px solid ${isActive ? dest.color + "66" : "transparent"}`,
+                borderRadius: "0.5rem",
+                padding: "0.25rem 0.4rem",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "background 200ms, border-color 200ms",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {/* Colored circle with icon */}
+              <span
+                style={{
+                  width: "1.6rem",
+                  height: "1.6rem",
+                  borderRadius: "50%",
+                  background: dest.color,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0.25rem",
+                  flexShrink: 0,
+                  boxShadow: isActive ? `0 0 0 2px ${dest.color}66` : "none",
+                  transition: "box-shadow 200ms",
+                }}
+              >
+                {ICONS[dest.id] ?? (
+                  <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "#fff" }}>
+                    {dest.order}
+                  </span>
+                )}
+              </span>
+              <span
+                style={{
+                  fontSize: "0.68rem",
+                  fontWeight: 500,
+                  color: isActive ? "#3d2b1f" : "#6b4f30",
+                  lineHeight: 1.3,
+                  transition: "color 200ms",
+                }}
+              >
+                {dest.name}
+                {dest.subtitle && (
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "0.6rem",
+                      color: isActive ? dest.color : "#9a7a55",
+                      fontStyle: "italic",
+                      fontWeight: 400,
+                    }}
+                  >
+                    {dest.subtitle}
+                  </span>
+                )}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

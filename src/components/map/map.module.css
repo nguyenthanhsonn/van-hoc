@@ -1,0 +1,182 @@
+/* =====================================================
+   MAP ANIMATIONS & STYLES
+   All keyframes and class-based styles for the interactive
+   destination map. Uses CSS custom properties for theming.
+   ===================================================== */
+
+/* ---------- Intro Animation ---------- */
+.mapIntroWrapper {
+  animation: mapFadeZoom 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes mapFadeZoom {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ---------- Label Stagger Intro ---------- */
+.labelIntro {
+  animation: labelSlideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--label-delay, 0ms);
+}
+
+@keyframes labelSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Pulse Ring ---------- */
+.pulseRing {
+  animation: pulseWave 2.4s ease-out infinite;
+  animation-delay: var(--pulse-delay, 0ms);
+  transform-origin: center;
+}
+
+@keyframes pulseWave {
+  0% {
+    r: 16;
+    opacity: 0.7;
+  }
+  100% {
+    r: 32;
+    opacity: 0;
+  }
+}
+
+/* Stopped when hovering */
+.pulseRingStopped {
+  animation-play-state: paused;
+}
+
+/* ---------- Hover Pop ---------- */
+.destinationPop {
+  transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
+  transition:
+    transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 300ms ease,
+    opacity 300ms ease;
+  pointer-events: none;
+}
+
+.destinationPop.isHovered {
+  transform: scale(1.055);
+  filter: drop-shadow(0 0 12px rgba(255, 220, 80, 0.75))
+    drop-shadow(0 0 28px rgba(255, 180, 0, 0.45));
+}
+
+/* ---------- Darkening Overlay ---------- */
+.darkenOverlay {
+  transition: opacity 300ms ease;
+}
+
+/* ---------- Running Stroke (marching ants) ---------- */
+.marchingStroke {
+  animation: marchDash 2s linear infinite;
+  stroke-dasharray: 16 8;
+}
+
+@keyframes marchDash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+/* ---------- Hover Hit Area ---------- */
+.hitArea {
+  cursor: pointer;
+  fill: transparent;
+  outline: none;
+}
+
+.hitArea:focus-visible {
+  outline: 3px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+/* ---------- Detail Panel Slide ---------- */
+.panelSlideRight {
+  animation: slideInRight 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.panelSlideBottom {
+  animation: slideInBottom 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes slideInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Panel Content Stagger ---------- */
+.panelItem {
+  animation: panelFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--item-delay, 0ms);
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Reduced Motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mapIntroWrapper,
+  .labelIntro,
+  .panelSlideRight,
+  .panelSlideBottom,
+  .panelItem {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .pulseRing {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .marchingStroke {
+    animation: none !important;
+  }
+
+  .destinationPop {
+    transition:
+      filter 150ms ease,
+      opacity 150ms ease !important;
+  }
+}
