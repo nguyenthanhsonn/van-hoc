@@ -1,33 +1,29 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Next.js Layout System - VanHoc UI",
-  description: "Bố cục thư mục và giao diện mẫu Next.js App Router",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  title: "Bản Đồ Việt Nam 2D Tương Tác | MapLibre GL JS",
+  description:
+    "Bản đồ Việt Nam 2D tương tác chuẩn 34 đơn vị hành chính sau sáp nhập, bao gồm đầy đủ Quần đảo Hoàng Sa và Trường Sa cùng các mốc địa danh văn học & lịch sử.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html
-      lang="vi"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="h-full w-full m-0 p-0 overflow-hidden font-sans bg-slate-950 text-white">{children}</body>
+    <html lang="vi">
+      <body>{children}</body>
     </html>
   );
 }

@@ -1,0 +1,586 @@
+/* ── Landmark Story Page Container ── */
+.pageContainer {
+  min-height: 100vh;
+  background-color: #f6faf7;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Sticky Top Bar ── */
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 180ms ease;
+}
+
+.backBtn:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #047857;
+  transform: translateX(-2px);
+}
+
+.siteBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.brandDot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.quickNavGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.quickNavLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.25rem;
+}
+
+.quickNavBtn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 160ms ease, opacity 160ms ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.quickNavBtn:hover {
+  transform: scale(1.12);
+  opacity: 0.92;
+}
+
+.quickNavBtnActive {
+  box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #059669;
+}
+
+/* ── Hero Section ── */
+.heroSection {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  filter: brightness(0.92);
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 23, 42, 0.2) 0%,
+    rgba(15, 23, 42, 0.65) 60%,
+    rgba(15, 23, 42, 0.95) 100%
+  );
+  display: flex;
+  align-items: flex-end;
+  padding: 3rem 1.5rem;
+}
+
+.heroContent {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  color: #ffffff;
+}
+
+.heroTagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.orderBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.categoryTag {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.provinceTag {
+  background: rgba(254, 240, 138, 0.25);
+  backdrop-filter: blur(8px);
+  color: #fef08a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid rgba(254, 240, 138, 0.4);
+}
+
+.heroTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.heroSubtitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #a7f3d0;
+  margin: 0;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Main Container ── */
+.mainContainer {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  flex: 1;
+}
+
+/* ── Quick Facts Strip ── */
+.factsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: -3.5rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.factCard {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.factIconCircle {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.factMeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.factLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.factValue {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+  margin-top: 0.15rem;
+}
+
+.gpsCode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  color: #0f766e;
+}
+
+/* ── Poetic Quote Block ── */
+.quoteBox {
+  margin: 1.5rem 0 2.5rem;
+  padding: 1.25rem 1.75rem;
+  background: #ecfdf5;
+  border-left: 5px solid #059669;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.08);
+}
+
+.quoteText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #064e3b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Overview Narrative Block ── */
+.overviewSection {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 1.75rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  margin-bottom: 2rem;
+}
+
+.overviewHeading {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.overviewText {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: #334155;
+  margin: 0;
+}
+
+/* ── Story Sections List ── */
+.storySectionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.storyCard {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 1.75rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.storyCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.06);
+}
+
+.storyCardTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #064e3b;
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.storyCardIndex {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #047857;
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.storyCardContent {
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: #475569;
+  margin: 0;
+}
+
+/* ── Interactive Map CTA ── */
+.mapCtaCard {
+  background: linear-gradient(135deg, #064e3b 0%, #0f766e 100%);
+  color: #ffffff;
+  border-radius: 18px;
+  padding: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  box-shadow: 0 15px 35px -5px rgba(6, 78, 59, 0.35);
+  margin-bottom: 3.5rem;
+}
+
+.mapCtaLeft {
+  flex: 1;
+  min-width: 260px;
+}
+
+.mapCtaTitle {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0 0 0.4rem;
+}
+
+.mapCtaDesc {
+  font-size: 0.9rem;
+  color: #d1fae5;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.mapCtaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #064e3b;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 180ms ease;
+}
+
+.mapCtaBtn:hover {
+  background: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Other Landmarks Section ── */
+.otherLandmarksSection {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 2.5rem;
+}
+
+.sectionHeadingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeading {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.landmarksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.landmarkItemCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: all 200ms ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.landmarkItemCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.1);
+  border-color: #a7f3d0;
+}
+
+.itemImageWrapper {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background: #cbd5e1;
+}
+
+.itemImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.landmarkItemCard:hover .itemImage {
+  transform: scale(1.05);
+}
+
+.itemBody {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.itemOrderBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #ffffff;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.itemProvince {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+.itemTitle {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.35rem;
+  line-height: 1.3;
+}
+
+.itemDesc {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #64748b;
+  margin: 0 0 0.85rem;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.itemLinkText {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #047857;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* ── Footer ── */
+.pageFooter {
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+/* ── Responsive Adaptations ── */
+@media (max-width: 768px) {
+  .heroSection {
+    height: 380px;
+  }
+
+  .heroTitle {
+    font-size: 1.85rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.95rem;
+  }
+
+  .factsGrid {
+    grid-template-columns: 1fr;
+    margin-top: -2rem;
+  }
+
+  .mapCtaCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topBar {
+    padding: 0.65rem 1rem;
+  }
+
+  .quickNavGroup {
+    display: none;
+  }
+}
