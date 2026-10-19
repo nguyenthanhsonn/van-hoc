@@ -1,6 +1,22 @@
 import type { Map as MapLibreMap, LngLatBoundsLike, LngLatLike } from "maplibre-gl";
 import type { RefObject } from "react";
 
+export interface GeoJSONPoint {
+  type: "Point";
+  coordinates: [number, number];
+}
+
+export interface GeoJSONFeature<G = GeoJSONPoint, P = Record<string, unknown>> {
+  type: "Feature";
+  geometry: G;
+  properties: P;
+}
+
+export interface GeoJSONFeatureCollection<G = GeoJSONPoint, P = Record<string, unknown>> {
+  type: "FeatureCollection";
+  features: GeoJSONFeature<G, P>[];
+}
+
 /**
  * Properties for each administrative unit (province/city) in GeoJSON
  */
@@ -29,29 +45,56 @@ export interface LandmarkSubWork {
   readonly quote?: string;
 }
 
+export type Terrain = "mountain" | "plain" | "sea";
+
+export interface DetailView {
+  center: [number, number];
+  zoom: number;
+  pitch?: number;
+  bearing?: number;
+}
+
+export interface SubLandmark {
+  id: string;
+  name: string;
+  type: "gate" | "building" | "monument" | "viewpoint" | "pier" | "road" | "other";
+  coordinates: [number, number]; /* [lng, lat] */
+  minZoom: 12 | 13 | 14 | 15 | 16;
+  description: string;
+  relativePosition?: string;
+  confidence: "high" | "medium" | "low";
+}
+
 /**
  * Definition for custom landmarks / literary milestones
  */
 export interface Landmark {
   readonly id: string;
   readonly order: number;
-  readonly name: string;
+  readonly terrain: Terrain;
+  readonly title: string;
+  readonly name?: string;
+  readonly province: string;
+  readonly lngLat: readonly [number, number];
+  readonly coordinates?: readonly [number, number]; // [longitude, latitude]
+  readonly summary: string;
+  readonly image: string;
+  readonly zoom?: number;
+  readonly detailView?: DetailView;
+  readonly subLandmarks?: SubLandmark[];
   readonly workName?: string;
   readonly subtitle?: string;
-  readonly category: string;
-  readonly locationName: string;
-  readonly province: string;
-  readonly coordinates: readonly [number, number]; // [longitude, latitude]
-  readonly story: string;
-  readonly shortDescription: string;
-  readonly imageUrl: string;
-  readonly iconType: "temple" | "mountain" | "field" | "harbor";
-  readonly color: string;
+  readonly category?: string;
+  readonly locationName?: string;
+  readonly story?: string;
+  readonly shortDescription?: string;
+  readonly imageUrl?: string;
+  readonly iconType?: "temple" | "mountain" | "field" | "harbor" | "house" | "sea";
+  readonly color?: string;
   readonly subWorks?: readonly LandmarkSubWork[];
   readonly sections?: readonly LandmarkStorySection[];
   readonly quote?: string;
 }
-
 
 /**
  * Bounds padding configuration
@@ -114,6 +157,9 @@ export interface UseVietnamMapReturn {
   selectedProvince: ProvinceProperties | null;
   landmarks: readonly Landmark[];
   selectedLandmark: Landmark | null;
+  selectedId: string | null;
+  focusLandmark: (id: string | null) => void;
+  resetView: () => void;
   zoomIn: () => void;
   zoomOut: () => void;
   resetToVietnamView: () => void;
@@ -121,4 +167,3 @@ export interface UseVietnamMapReturn {
   clearSelectedProvince: () => void;
   clearSelectedLandmark: () => void;
 }
-
