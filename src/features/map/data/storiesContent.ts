@@ -136,3 +136,5 @@ export const storiesContent: Record<string, StoryContent> = {
     glossary: [{ term: 'Tang ma', meaning: 'Những việc và nghi thức liên quan đến người đã qua đời.' }, { term: 'Phong tục', meaning: 'Những cách sinh hoạt, ứng xử được duy trì trong một cộng đồng.' }],
   },
 };
+
+storiesContent['limo-kapil'] = storiesContent['bo-kapil'];

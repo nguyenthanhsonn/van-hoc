@@ -1,11 +1,11 @@
 # Bản Đồ Việt Nam 2D Tương Tác (Next.js & MapLibre GL JS)
 
-Dự án bản đồ 2D Việt Nam tương tác production-ready trên nền **Next.js (App Router)**, hoàn toàn độc lập không sử dụng basemap/tile online từ bên thứ ba (render trực tiếp dữ liệu GeoJSON nội bộ).
+Dự án bản đồ 2D Việt Nam tương tác production-ready trên nền **Next.js (App Router)**, dùng nền OpenFreeMap Positron với lớp tỉnh và mặt nạ lãnh thổ từ GeoJSON nội bộ. Nền chi tiết cần kết nối mạng.
 
 ## 🚀 Tech Stack
 
 - **Framework:** Next.js 16 (App Router + Turbopack) + React 19 + TypeScript (strict mode)
-- **Mapping Engine:** MapLibre GL JS (offline vector style, 2D thuần, không phụ thuộc map server)
+- **Mapping Engine:** MapLibre GL JS (nền OpenFreeMap, 2D, font Noto Sans nội bộ)
 - **Styling:** CSS Modules & globals.css (không magic numbers, tập trung tại `mapConfig.ts`)
 - **Dữ liệu:** GeoJSON ranh giới hành chính 34 đơn vị sau sáp nhập + đầy đủ Quần đảo Hoàng Sa & Trường Sa + Các mốc địa danh văn học & lịch sử.
 
@@ -132,3 +132,17 @@ Mỗi mốc có:
 - Tọa độ GPS chính xác `[kinh độ, vĩ độ]`.
 - Marker tương tác với vòng hiệu ứng xung nhịp (pulse animation), số thứ tự và nhãn tên.
 - Thẻ HUD chi tiết hiển thị giai thoại văn học / văn hóa, vị trí và nút bay (`flyTo`) đến tâm điểm.
+
+
+## Nền chi tiết, cụm mốc và khoanh vùng
+
+Chạy `pnpm make-mask` sau khi thay dữ liệu tỉnh để tạo lại `public/data/vietnam-mask.geojson`. Script dùng Turf v7 để gộp tỉnh, kiểm tra phần hình học bị mất và tạo mặt nạ. `pnpm lint` kiểm tra cả TypeScript trong `scripts/`.
+
+Pin và legend dùng màu địa hình, số thứ tự 1–7; chọn mốc cập nhật `?mo=<id>` và giữ các query/hash khác. Các vùng tròn là phạm vi minh họa, không phải ranh giới khảo sát. Nền zoom chi tiết dùng hoàn toàn OpenFreeMap; lớp ảnh coastal đã được gỡ, file ảnh vẫn được giữ trong public/images.
+
+Xem [báo cáo triển khai và dữ liệu cần bổ sung](docs/map-implementation.md). Phần danh sách mốc cũ phía trên là mô tả lịch sử; tọa độ hiện hành giữ theo `landmarksData.ts`.
+
+
+## Duyệt tọa độ địa danh
+
+Chạy thủ công `pnpm geocode` để lưu ứng viên Nominatim vào `scripts/output/geocode-candidates.json` (đã gitignore), không tự cập nhật mốc. Các truy vấn chạy tuần tự, cách nhau ít nhất 1,1 giây và dùng cache. Mở `/?pick=1` ở dev để click lấy `lng, lat`, xem toast/console và copy vào clipboard. Chỉ cập nhật mốc sau khi duyệt tọa độ; không bắt buộc số điểm con. Xem [hướng dẫn và kết quả geocoding](docs/geocoding.md).

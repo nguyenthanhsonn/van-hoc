@@ -1,3 +1,4 @@
+import type { BasemapMode } from './config/mapConfig';
 import type { Map as MapLibreMap, LngLatBoundsLike, LngLatLike } from "maplibre-gl";
 import type { RefObject } from "react";
 
@@ -65,6 +66,13 @@ export interface SubLandmark {
   confidence: "high" | "medium" | "low";
 }
 
+export type PositionType = "verified" | "approx" | "illustrative" | "area";
+
+export interface LandmarkTheme {
+  color: string;
+  textOn: string;
+}
+
 /**
  * Definition for custom landmarks / literary milestones
  */
@@ -73,6 +81,11 @@ export interface Landmark {
   readonly order: number;
   readonly terrain: Terrain;
   readonly title: string;
+  readonly positionType: PositionType;
+  readonly theme: LandmarkTheme;
+  readonly needsReview?: boolean;
+  readonly positionSource?: string;
+  readonly hidden?: boolean;
   readonly name?: string;
   readonly province: string;
   readonly lngLat: readonly [number, number];
@@ -80,6 +93,7 @@ export interface Landmark {
   readonly summary: string;
   readonly image: string;
   readonly zoom?: number;
+  readonly area?: { polygon?: [number, number][]; radiusMeters?: number };
   readonly detailView?: DetailView;
   readonly subLandmarks?: SubLandmark[];
   readonly workName?: string;
@@ -91,6 +105,7 @@ export interface Landmark {
   readonly imageUrl?: string;
   readonly iconType?: "temple" | "mountain" | "field" | "harbor" | "house" | "sea";
   readonly color?: string;
+  readonly stories?: readonly string[] | readonly { id: string; title: string; intro?: string }[];
   readonly subWorks?: readonly LandmarkSubWork[];
   readonly sections?: readonly LandmarkStorySection[];
   readonly quote?: string;
@@ -145,12 +160,23 @@ export interface MapConfig {
   };
 }
 
+export interface EditState {
+  activeSlug: string;
+  lngLat: [number, number];
+  distanceToCoastMeters: number;
+  provinceName: string;
+  allCoordinates: Record<string, [number, number]>;
+}
+
 /**
  * Return interface for useVietnamMap custom hook
  */
 export interface UseVietnamMapReturn {
   mapContainerRef: RefObject<HTMLDivElement | null>;
   mapInstance: MapLibreMap | null;
+  basemapMode: BasemapMode;
+  setBasemapMode: (mode: BasemapMode) => void;
+  coordinateToast: string | null;
   isLoading: boolean;
   errorMessage: string | null;
   hoveredProvince: ProvinceProperties | null;
@@ -158,7 +184,15 @@ export interface UseVietnamMapReturn {
   landmarks: readonly Landmark[];
   selectedLandmark: Landmark | null;
   selectedId: string | null;
+  editState?: EditState | null;
+  copyActiveCoordinate?: () => void;
+  copyAllCoordinates?: () => void;
   focusLandmark: (id: string | null) => void;
+  hoveredLandmarkId: string | null;
+  scheduleHover: (id: string) => void;
+  scheduleClose: () => void;
+  cancelClose: () => void;
+  clusterTooltip: { x: number; y: number; landmarkOrders: number[] } | null;
   resetView: () => void;
   zoomIn: () => void;
   zoomOut: () => void;

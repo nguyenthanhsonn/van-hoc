@@ -1,0 +1,231 @@
+/* src/features/map/components/MobileBottomSheet.module.css */
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  z-index: 35;
+  animation: fadeIn 200ms ease-out both;
+}
+
+.sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: calc(85dvh);
+  background-color: #ffffff;
+  border-top: 3px solid var(--c);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
+  z-index: 36;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 16px));
+  box-sizing: border-box;
+  animation: slideUp 250ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  touch-action: pan-y;
+  will-change: transform;
+}
+
+.dragHandleArea {
+  width: 100%;
+  padding: 8px 0 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
+}
+
+.dragPill {
+  width: 38px;
+  height: 4px;
+  background-color: #d1d5db;
+  border-radius: 2px;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background-color: #f3f4f6;
+  overflow: hidden;
+}
+
+.headerImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.headerGradientFallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 50%, black));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-on);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  z-index: 5;
+}
+
+.closeBtn:active {
+  transform: scale(0.92);
+}
+
+.body {
+  padding: 14px 18px;
+}
+
+.tagRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.terrainTag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background-color: var(--c);
+  color: var(--text-on);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.orderBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--c);
+  color: var(--text-on);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 6px 0 2px;
+  line-height: 1.25;
+}
+
+.province {
+  font-size: 13.5px;
+  color: #4b5563;
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+
+.summary {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+  margin: 0 0 12px;
+}
+
+.storiesBlock {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.storiesLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.storiesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.storyLink {
+  font-size: 13.5px;
+  color: color-mix(in srgb, var(--c) 80%, black);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.ctaBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  border-radius: 12px;
+  background-color: var(--c);
+  color: var(--text-on);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: filter 0.15s ease;
+}
+
+.ctaBtn:active {
+  filter: brightness(0.92);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

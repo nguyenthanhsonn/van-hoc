@@ -2,6 +2,24 @@ import type { LngLatBoundsLike } from 'maplibre-gl';
 import type { Terrain, MapConfig } from '../types';
 
 export type TerrainType = Terrain;
+export type BasemapMode = 'map' | 'satellite' | 'terrain';
+
+export const SATELLITE_TILES = {
+  type: 'raster',
+  tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+  tileSize: 256,
+  maxzoom: 18,
+  attribution: 'Tiles © Esri, Maxar, Earthstar Geographics',
+} satisfies import('maplibre-gl').RasterSourceSpecification;
+
+export const TERRAIN_DEM = {
+  type: 'raster-dem',
+  tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+  encoding: 'terrarium',
+  tileSize: 256,
+  maxzoom: 15,
+  attribution: 'Terrain © Mapzen / AWS Terrain Tiles',
+} satisfies import('maplibre-gl').RasterDEMSourceSpecification;
 
 export const TERRAIN_COLORS = {
   mountain: '#2E7D4F',
@@ -9,39 +27,21 @@ export const TERRAIN_COLORS = {
   sea: '#3B8FCB',
 } as const;
 
-export const LANDMARK_COLORS: Record<number, string> = {
-  1: '#E26343', // Mốc 1: Tháp Bà Po Nagar (Cam gạch)
-  2: '#8B5CF6', // Mốc 2: Đường lên núi Đá Trắng (Tím)
-  3: '#0D9488', // Mốc 3: Cek Yang Patao - núi Đá Trắng (Xanh mòng két)
-  4: '#E11D48', // Mốc 4: Nhà sinh hoạt cộng đồng Chăm (Đỏ hồng)
-  5: '#0284C7', // Mốc 5: Cửa biển Phan Rí (Xanh dương biển)
-  6: '#D97706', // Mốc 6: Nương rẫy của người Chăm (Vàng hổ phách)
-  7: '#16A34A', // Mốc 7: Nương ngô (Xanh lá tươi)
-};
+export const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
+export const SEA_COLOR = '#e3f1ec';
+export const PROVINCE_FILL_OPACITY: import('maplibre-gl').ExpressionSpecification =
+  ['interpolate', ['linear'], ['zoom'], 6, 0.9, 10, 0.3, 12, 0];
+export const TERRAIN_POPUP_BG = {
+  mountain: '#E6F2EA', plain: '#FBF3DC', sea: '#E3F0FA',
+} as const;
 
 export const ZOOM = {
   clusterMax: 9,
   showNames: 8,
-  imageOverlayFrom: 11,
-  imageOverlayFull: 13,
+  areaFrom: 9,
 } as const;
 
 export const SUB_ZOOM_LEVELS = [12, 13, 14, 15, 16] as const;
-
-/**
- * TODO: chờ tọa độ 4 góc thật, đặt enabled = true khi đã căn đúng.
- * Tọa độ theo thứ tự: [trái-trên, phải-trên, phải-dưới, trái-dưới] (TL, TR, BR, BL)
- */
-export const COASTAL_IMAGE = {
-  url: '/images/coastal-map-ai-hd.jpg',
-  coordinates: [
-    [108.2, 12.6], // Trái - trên (TL)
-    [109.6, 12.6], // Phải - trên (TR)
-    [109.6, 11.0], // Phải - dưới (BR)
-    [108.2, 11.0], // Trái - dưới (BL)
-  ] as [[number, number], [number, number], [number, number], [number, number]],
-  enabled: false,
-};
 
 export const GEOJSON_URL = '/data/vietnam-provinces.geojson';
 
@@ -51,12 +51,12 @@ export const VIETNAM_BOUNDS: LngLatBoundsLike = [
   [118.2, 23.6],
 ];
 export const MAX_BOUNDS: LngLatBoundsLike = [
-  [92, -8],
-  [130, 38],
+  [100, 5],
+  [120, 25],
 ];
 
 export const MAP_COLORS = {
-  sea: '#e3f1ec',
+  sea: SEA_COLOR,
   provinceWithLandmark: '#2e7a4d', // xanh đậm: tỉnh có điểm mốc
   provinceWithoutLandmark: '#cfe8bd', // xanh nhạt: tỉnh không có điểm mốc
   provinceHover: '#a9d58f',
@@ -65,7 +65,22 @@ export const MAP_COLORS = {
   island: '#2e7a4d',
 };
 
-// Màu nền cửa sổ thông tin theo địa hình (khớp yêu cầu đặc tả)
+export const TERRAIN_LABELS: Record<Terrain, string> = {
+  mountain: 'Vùng núi',
+  plain: 'Đồng bằng',
+  sea: 'Biển, cửa biển',
+};
+
+export const LANDMARK_THEMES: Record<number, { color: string; textOn: string }> = {
+  1: { color: '#C8431F', textOn: '#FFFFFF' },
+  2: { color: '#7C4DCC', textOn: '#FFFFFF' },
+  3: { color: '#0B7F70', textOn: '#FFFFFF' },
+  4: { color: '#E9A21B', textOn: '#1F2937' },
+  5: { color: '#D6336C', textOn: '#FFFFFF' },
+  6: { color: '#1F6FC2', textOn: '#FFFFFF' },
+};
+
+// Màu nền cửa sổ thông tin theo địa hình (giữ để tương thích)
 export const TERRAIN_STYLE: Record<
   Terrain,
   { label: string; background: string; border: string; badge: string }
@@ -117,8 +132,8 @@ export const MAP_CONFIG: MapConfig = {
   maxBounds: MAX_BOUNDS,
   defaultCenter: [108.2, 15.6],
   defaultZoom: 5.2,
-  minZoom: 4.5,
-  maxZoom: 12.0,
+  minZoom: 4,
+  maxZoom: 18,
   landmarkZoom: 10.5,
   fitBoundsPadding: {
     top: 50,

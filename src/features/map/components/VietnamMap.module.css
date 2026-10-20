@@ -64,7 +64,8 @@
   top: 16px;
   right: 16px;
   width: 340px;
-  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overscroll-behavior: contain;
   overflow-y: auto;
   z-index: 20;
   padding: 14px 16px;
@@ -124,24 +125,24 @@
   padding: 6px 8px;
   border-radius: 8px;
   cursor: pointer;
-  border-left: 3px solid transparent;
+  border-left: 4px solid transparent;
   transition: background-color 0.15s ease, border-left-color 0.15s ease, transform 0.12s ease;
   user-select: none;
 }
 
 .landmarkListItem:hover {
-  background-color: rgba(20, 60, 40, 0.08);
+  background-color: color-mix(in srgb, var(--c, #12462a) 12%, transparent);
   transform: translateX(2px);
 }
 
 .landmarkListItem:focus-visible {
-  outline: 2px solid #12462a;
+  outline: 2px solid var(--c, #12462a);
   outline-offset: 1px;
 }
 
 .landmarkListItem.active {
-  background-color: rgba(46, 122, 77, 0.16);
-  border-left-color: #12462a;
+  background-color: color-mix(in srgb, var(--c, #12462a) 14%, transparent);
+  border-left-color: var(--c, #12462a);
   font-weight: 600;
 }
 
@@ -149,14 +150,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border-radius: 50%;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #ffffff;
   flex: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.landmarkTextCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .landmarkItemName {
@@ -165,109 +174,15 @@
   line-height: 1.3;
 }
 
-/* ---------- Cửa sổ thông tin (màu nền theo địa hình) ---------- */
-.card {
-  position: absolute;
-  z-index: 30;
-  top: 298px;
-  right: 16px;
-  width: 340px;
-  max-height: calc(100% - 314px);
-  overflow-y: auto;
-  border: 2px solid;
-  border-radius: 14px;
-  box-shadow: 0 8px 28px rgba(20, 60, 40, 0.25);
-  animation: cardIn 0.35s ease both;
-}
-
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.cardImg {
-  display: block;
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 12px 12px 0 0;
-}
-
-.cardBody {
-  padding: 12px 16px 16px;
-}
-
-.cardBody h2 {
-  margin: 8px 0 0;
-  font-size: 19px;
-}
-
-.cardProvince {
-  margin: 2px 0 8px;
-  font-size: 13px;
+.landmarkStoriesSummary {
+  font-size: 11px;
   color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.cardBody p {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #fff;
-}
-
-.close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 1;
-  width: 28px;
-  height: 28px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.cta {
-  display: inline-block;
-  margin-top: 6px;
-  padding: 9px 18px;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.cta:hover {
-  filter: brightness(0.92);
-}
-
-.cta:focus-visible,
-.close:focus-visible,
-.controls button:focus-visible,
-.mini:focus-visible {
-  outline: 3px solid #12462a;
-  outline-offset: 2px;
-}
-
-/* ---------- Điều khiển + thu nhỏ toàn cảnh ---------- */
+/* ---------- Điều khiển phóng to / thu nhỏ & basemap ---------- */
 .controls {
   z-index: 40;
   position: absolute;
@@ -287,10 +202,24 @@
   color: var(--ink);
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(20, 60, 40, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .controls button:hover {
   background: #fff;
+  transform: translateY(-1px);
+}
+
+.controls button:focus-visible,
+.mini:focus-visible,
+.basemapControl button:focus-visible,
+.mobileLegendChip:focus-visible,
+.mobileDrawerClose:focus-visible {
+  outline: 3px solid #12462a;
+  outline-offset: 2px;
 }
 
 .mini {
@@ -312,6 +241,12 @@
   box-shadow: 0 2px 10px rgba(20, 60, 40, 0.18);
   font-size: 11px;
   font-weight: 600;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.mini:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
 }
 
 .mini img {
@@ -319,73 +254,184 @@
   width: auto;
 }
 
-/* ---------- Di động ---------- */
-@media (max-width: 899px) {
-  .legend {
-    top: 8px;
-    right: 8px;
-    width: min(240px, calc(100% - 16px));
-    max-height: min(280px, 45dvh);
-    overflow-y: auto;
-    padding: 10px 12px;
-    font-size: 11px;
-  }
+.basemapControl {
+  position: absolute;
+  z-index: 40;
+  left: 350px;
+  bottom: 20px;
+  display: flex;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid #cfe0d6;
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 2px 8px rgba(20, 60, 40, 0.15);
+}
 
-  .legend h3,
-  .legend h4 {
-    font-size: 11px;
-    margin-bottom: 4px;
-  }
+.basemapControl button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
 
-  .legend h4 {
-    margin-top: 8px;
-  }
+.basemapControl button[aria-pressed='true'] {
+  background: #17482c;
+  color: white;
+  font-weight: 600;
+}
 
-  .legend p {
-    margin: 4px 0;
-  }
+/* ---------- Tooltip khi hover cụm mốc (cluster) ---------- */
+.clusterTooltip {
+  position: absolute;
+  z-index: 45;
+  transform: translate(-50%, calc(-100% - 14px));
+  pointer-events: none;
+  background: rgba(23, 56, 42, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: clusterFadeIn 0.15s ease-out;
+  white-space: nowrap;
+}
 
-  .swatch,
-  .dot {
-    height: 14px;
-    width: 20px;
-  }
+.clusterTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: rgba(23, 56, 42, 0.94) transparent transparent transparent;
+}
 
-  .card {
-    top: auto;
-    right: 8px;
-    left: 8px;
-    bottom: 8px;
-    width: auto;
-    max-height: min(300px, 44dvh);
-    overscroll-behavior: contain;
+@keyframes clusterFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 8px));
   }
+  to {
+    opacity: 1;
+    transform: translate(-50%, calc(-100% - 14px));
+  }
+}
 
-  .cardImg {
-    height: 100px;
-  }
+.clusterBadges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
 
-  .controls {
-    left: 190px;
-    bottom: 20px;
-    gap: 6px;
-  }
+.clusterBadgeItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
 
-  .controls button {
-    width: 36px;
-    height: 42px;
-  }
+.clusterHint {
+  font-size: 11px;
+  color: #a7f3d0;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
 
-  .root[data-detail='true'] .controls,
-  .root[data-detail='true'] .mini {
-    bottom: calc(min(300px, 44dvh) + 24px);
-  }
+/* ---------- Chip & Drawer Danh sách mốc Mobile (< 640px) ---------- */
+.mobileLegendChip {
+  display: none;
+}
 
-  .mini {
-    width: 160px;
-    height: 50px;
-    bottom: 16px;
-  }
+.mobileDrawerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  animation: fadeInBackdrop 0.2s ease-out;
+}
+
+@keyframes fadeInBackdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mobileDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(340px, 86vw);
+  z-index: 60;
+  background: #ffffff;
+  box-shadow: -6px 0 28px rgba(0, 0, 0, 0.25);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: slideDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDrawer {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.mobileDrawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mobileDrawerHeader h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.mobileDrawerClose {
+  all: unset;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.mobileDrawerClose:active {
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .loadError {
@@ -399,232 +445,202 @@
   border-radius: 8px;
 }
 
-/* ---------- Chú giải các điểm mốc (Góc phải dưới màn hình) ---------- */
-.landmarksLegend {
+.coordinateToast {
   position: absolute;
-  z-index: 35;
-  right: 20px;
-  bottom: 20px;
-  width: min(440px, calc(100vw - 32px));
-  padding: 16px 20px 18px;
-  border-radius: 20px;
-  background: #ede8d5;
-  border: 1px solid rgba(120, 97, 27, 0.22);
-  box-shadow: 0 14px 38px rgba(25, 45, 30, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(8px);
-  animation: legendFadeIn 0.25s ease-out;
-}
-
-@keyframes legendFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.landmarksLegendHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.landmarksLegendHeader h3 {
-  margin: 0;
-  font-size: 13.5px;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  color: #78611b;
-  text-transform: uppercase;
-}
-
-.landmarksLegendClose {
-  all: unset;
-  cursor: pointer;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: #78611b;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.landmarksLegendClose:hover {
-  background-color: rgba(120, 97, 27, 0.16);
-  color: #483a0e;
-}
-
-.landmarksLegendClose:focus-visible {
-  outline: 2px solid #78611b;
-  outline-offset: 1px;
-}
-
-.landmarksGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 16px;
-}
-
-.landmarkItem {
-  all: unset;
-  box-sizing: border-box;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 8px;
-  border-radius: 12px;
-  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-  user-select: none;
-}
-
-.landmarkItem:hover {
-  background-color: rgba(120, 97, 27, 0.09);
-  transform: translateY(-1px);
-}
-
-.landmarkItem:focus-visible {
-  outline: 2px solid #78611b;
-  outline-offset: 2px;
-}
-
-.landmarkItemActive {
-  background-color: rgba(120, 97, 27, 0.16);
-  box-shadow: inset 0 0 0 1.5px rgba(120, 97, 27, 0.4);
-}
-
-.landmarkIconCircle {
-  flex: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: transform 0.18s ease;
-}
-
-.landmarkItem:hover .landmarkIconCircle {
-  transform: scale(1.1);
-}
-
-.landmarkTexts {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  text-align: left;
-}
-
-.landmarkTitle {
+  z-index: 60;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #17382a;
+  color: #fff;
   font-size: 13px;
-  font-weight: 700;
-  color: #2b2518;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 
-.landmarkSubtitle {
-  font-size: 11.5px;
-  font-style: italic;
-  color: #756a52;
-  line-height: 1.2;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.landmarksLegendOpenBtn {
-  all: unset;
-  box-sizing: border-box;
-  cursor: pointer;
-  position: absolute;
-  z-index: 35;
-  right: 20px;
-  bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: #ede8d5;
-  border: 1px solid rgba(120, 97, 27, 0.25);
-  box-shadow: 0 4px 18px rgba(25, 45, 30, 0.22);
-  font-size: 12.5px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: #78611b;
-  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.landmarksLegendOpenBtn:hover {
-  background-color: #f6f1df;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(25, 45, 30, 0.28);
-}
-
-.legendPinIcon {
-  font-size: 15px;
-  line-height: 1;
-}
-
-/* Mobile responsive */
-@media (max-width: 899px) {
-  .landmarksLegend {
-    right: 8px;
-    bottom: 8px;
-    width: min(360px, calc(100vw - 16px));
+/* Tablet (640px - 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .legend {
+    width: 290px;
     padding: 12px 14px;
-    max-height: 220px;
-    overflow-y: auto;
+    font-size: 12px;
+  }
+  .basemapControl {
+    left: 200px;
+    bottom: 74px;
+  }
+  .controls {
+    left: 200px;
+    bottom: 20px;
+  }
+}
+
+/* Mobile (< 640px) */
+@media (max-width: 639px) {
+  .legend {
+    display: none !important;
   }
 
-  .landmarksGrid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 10px;
+  .mobileLegendChip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 25;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid rgba(23, 56, 42, 0.18);
+    box-shadow: 0 4px 14px rgba(20, 60, 40, 0.18);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease;
   }
 
-  .landmarkIconCircle {
-    width: 32px;
-    height: 32px;
+  .mobileLegendChip:active {
+    transform: scale(0.96);
+    background: #ffffff;
   }
 
-  .landmarkTitle {
+  .basemapControl {
+    left: 12px;
+    right: auto;
+    bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .basemapControl button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .mini {
+    left: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    height: 44px;
+    min-height: 44px;
+    padding: 6px 14px;
     font-size: 12px;
   }
 
-  .landmarkSubtitle {
-    font-size: 10.5px;
+  .controls {
+    left: auto;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 8px;
   }
 
-  .root[data-detail='true'] .landmarksLegend,
-  .root[data-detail='true'] .landmarksLegendOpenBtn {
-    bottom: calc(min(300px, 44dvh) + 16px);
+  .controls button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 22px;
+  }
+
+  .coordinateToast {
+    bottom: 130px;
+  }
+
+  .root :global(.maplibregl-ctrl-attrib) {
+    max-width: calc(100vw - 16px);
+    font-size: 10px;
+    line-height: 1.3;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card {
-    animation: none;
-  }
-
-  .pin {
-    transition: none;
-  }
-
-  .landmarksLegend {
-    animation: none;
+  .pin,
+  .clusterTooltip,
+  .mobileDrawer,
+  .mobileDrawerBackdrop {
+    animation: none !important;
+    transition: none !important;
   }
 }
+
+/* ---------- Chế độ ?edit=1 (chỉ dev) ---------- */
+.editPanel {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(18, 70, 42, 0.95);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+  max-width: 90vw;
+}
+
+.editHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.editBadge {
+  background: #f59e0b;
+  color: #1a1a1a;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.editInfo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 10px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.editMeta {
+  font-size: 11.5px;
+  color: #d1fae5;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editBtn {
+  background: #2e7a4d;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.editBtn:hover {
+  background: #3c9c64;
+}
+

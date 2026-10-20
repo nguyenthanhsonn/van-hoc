@@ -1,17 +1,13 @@
 'use client';
 
 // src/features/map/components/VietnamMap.tsx
-import { useMemo } from 'react';
-import Link from 'next/link';
+import { useMemo, useState, useEffect, useRef, type CSSProperties } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import {
-  MAP_COLORS,
-  TERRAIN_STYLE,
-  TERRAIN_COLORS,
-  type TerrainType,
-} from '../config/mapConfig';
+import { MAP_COLORS } from '../config/mapConfig';
 import { useVietnamMap } from '../hooks/useVietnamMap';
 import type { Landmark } from '../types';
+import { LandmarkCallout } from './LandmarkCallout';
+import { MobileBottomSheet } from './MobileBottomSheet';
 import styles from './VietnamMap.module.css';
 
 export type MapLandmark = Landmark;
@@ -19,6 +15,9 @@ export type MapLandmark = Landmark;
 export function VietnamMap() {
   const {
     mapContainerRef,
+    basemapMode,
+    setBasemapMode,
+    coordinateToast,
     focusLandmark,
     selectedId,
     selectedLandmark,
@@ -28,14 +27,60 @@ export function VietnamMap() {
     isLoading,
     errorMessage,
     landmarks,
+    hoveredLandmarkId,
+    scheduleHover,
+    scheduleClose,
+    cancelClose,
+    clusterTooltip,
+    editState,
+    copyActiveCoordinate,
+    copyAllCoordinates,
+    mapInstance,
   } = useVietnamMap();
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  const legendRef = useRef<HTMLElement | null>(null);
+  const controlsRef = useRef<HTMLDivElement | null>(null);
+  const basemapRef = useRef<HTMLDivElement | null>(null);
+  const miniRef = useRef<HTMLButtonElement | null>(null);
+  const editRef = useRef<HTMLElement | null>(null);
+
+  // Responsive device check for hover capability
+  useEffect(() => {
+    const checkMobile = () => {
+      const hasTouchOnly =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(pointer: coarse)').matches &&
+        !window.matchMedia('(hover: hover)').matches;
+      setIsMobile(
+        typeof window !== 'undefined' && (window.innerWidth < 640 || hasTouchOnly)
+      );
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const sortedLandmarks = useMemo(
     () => [...landmarks].sort((a, b) => a.order - b.order),
     [landmarks]
   );
 
-  const terrain = selectedLandmark ? TERRAIN_STYLE[selectedLandmark.terrain] : null;
+  // Active landmark for Desktop/Tablet Callout
+  const calloutLandmark = useMemo(() => {
+    // If user is hovering any landmark, always show Callout
+    if (hoveredLandmarkId) {
+      return landmarks.find((l) => l.id === hoveredLandmarkId) ?? null;
+    }
+    // If a landmark was clicked/pinned: mobile uses bottom sheet, desktop/tablet uses callout
+    if (selectedLandmark) {
+      if (isMobile) return null;
+      return selectedLandmark;
+    }
+    return null;
+  }, [isMobile, selectedLandmark, hoveredLandmarkId, landmarks]);
 
   return (
     <div className={styles.root} data-detail={Boolean(selectedLandmark)}>
@@ -52,8 +97,183 @@ export function VietnamMap() {
 
       <div ref={mapContainerRef} className={styles.map} />
 
-      {/* Chú thích & Danh sách mốc */}
-      <aside className={styles.legend} aria-label="Chú thích màu sắc và danh sách mốc">
+      {/* CALLOUT (Desktop & Tablet) */}
+      {calloutLandmark && (
+        <LandmarkCallout
+          landmark={calloutLandmark}
+          map={mapInstance}
+          containerRef={mapContainerRef}
+          isPinned={Boolean(selectedId)}
+          onClose={() => focusLandmark(null)}
+          obstacleRefs={[legendRef, controlsRef, basemapRef, miniRef, editRef]}
+          onCardMouseEnter={cancelClose}
+          onCardMouseLeave={scheduleClose}
+        />
+      )}
+
+      {/* MOBILE BOTTOM SHEET (Touch & < 640px) */}
+      {isMobile && selectedLandmark && (
+        <MobileBottomSheet
+          landmark={selectedLandmark}
+          onClose={() => focusLandmark(null)}
+        />
+      )}
+
+      {/* CLUSTER HOVER TOOLTIP */}
+      {clusterTooltip && (
+        <div
+          className={styles.clusterTooltip}
+          style={{
+            left: `${clusterTooltip.x}px`,
+            top: `${clusterTooltip.y}px`,
+          }}
+          role="tooltip"
+        >
+          <div className={styles.clusterBadges}>
+            {clusterTooltip.landmarkOrders.map((order: number) => {
+              const lm = landmarks.find((l) => l.order === order);
+              return (
+                <span
+                  key={order}
+                  className={styles.clusterBadgeItem}
+                  style={{
+                    backgroundColor: lm?.theme.color ?? '#1F3A2C',
+                    color: lm?.theme.textOn ?? '#ffffff',
+                  }}
+                >
+                  {order}
+                </span>
+              );
+            })}
+          </div>
+          <span className={styles.clusterHint}>Bấm để phóng to</span>
+        </div>
+      )}
+
+      {coordinateToast && (
+        <div className={styles.coordinateToast} role="status" aria-live="polite">
+          {coordinateToast}
+        </div>
+      )}
+
+      {/* Chế độ ?edit=1 (chỉ dev) */}
+      {editState && (
+        <aside
+          ref={editRef}
+          className={styles.editPanel}
+          role="region"
+          aria-label="Bảng chỉnh sửa tọa độ mốc"
+        >
+          <div className={styles.editHeader}>
+            <span>Chỉnh sửa mốc (?edit=1)</span>
+            <span className={styles.editBadge}>{editState.activeSlug}</span>
+          </div>
+          <div className={styles.editInfo}>
+            {editState.activeSlug}: [{editState.lngLat[0]}, {editState.lngLat[1]}]
+          </div>
+          <div className={styles.editMeta}>
+            Khoảng cách tới bờ biển: {editState.distanceToCoastMeters} m · Tỉnh: {editState.provinceName}
+          </div>
+          <div className={styles.editActions}>
+            <button type="button" className={styles.editBtn} onClick={copyActiveCoordinate}>
+              Copy mốc này
+            </button>
+            <button type="button" className={styles.editBtn} onClick={copyAllCoordinates}>
+              Copy tất cả
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* Mobile Legend Chip (< 640px) */}
+      <button
+        type="button"
+        className={styles.mobileLegendChip}
+        onClick={() => setMobileDrawerOpen(true)}
+        aria-label="Mở danh sách mốc"
+      >
+        <span>📍 Danh sách mốc ({sortedLandmarks.length})</span>
+      </button>
+
+      {/* Mobile Drawer */}
+      {mobileDrawerOpen && (
+        <>
+          <div
+            className={styles.mobileDrawerBackdrop}
+            onClick={() => setMobileDrawerOpen(false)}
+            aria-hidden="true"
+          />
+          <aside className={styles.mobileDrawer} role="dialog" aria-label="Danh sách điểm mốc">
+            <div className={styles.mobileDrawerHeader}>
+              <h3>Danh sách điểm mốc ({sortedLandmarks.length})</h3>
+              <button
+                type="button"
+                className={styles.mobileDrawerClose}
+                onClick={() => setMobileDrawerOpen(false)}
+                aria-label="Đóng"
+              >
+                ×
+              </button>
+            </div>
+            <ul className={styles.landmarkList}>
+              {sortedLandmarks.map((lm) => {
+                const isSelected = lm.id === selectedId;
+                const storyTitles = (lm.stories ?? [])
+                  .map((s) => (typeof s === 'string' ? s : s.title))
+                  .join(' · ');
+                return (
+                  <li
+                    key={lm.id}
+                    role="button"
+                    tabIndex={0}
+                    className={`${styles.landmarkListItem} ${isSelected ? styles.active : ''}`}
+                    style={
+                      {
+                        '--c': lm.theme.color,
+                        '--text-on': lm.theme.textOn,
+                      } as CSSProperties
+                    }
+                    onClick={() => {
+                      setMobileDrawerOpen(false);
+                      focusLandmark(lm.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setMobileDrawerOpen(false);
+                        focusLandmark(lm.id);
+                      }
+                    }}
+                  >
+                    <span
+                      className={styles.badge}
+                      style={{
+                        backgroundColor: lm.theme.color,
+                        color: lm.theme.textOn,
+                      }}
+                    >
+                      {lm.order}
+                    </span>
+                    <div className={styles.landmarkTextCol}>
+                      <span className={styles.landmarkItemName}>{lm.title}</span>
+                      {storyTitles && (
+                        <span className={styles.landmarkStoriesSummary}>{storyTitles}</span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+        </>
+      )}
+
+      {/* Chú thích & Danh sách mốc (Desktop & Tablet) */}
+      <aside
+        ref={legendRef}
+        className={styles.legend}
+        aria-label="Chú thích màu sắc và danh sách mốc"
+      >
         <h3>Chú thích màu sắc</h3>
         <p>
           <i className={styles.swatch} style={{ background: MAP_COLORS.provinceWithLandmark }} />
@@ -64,85 +284,92 @@ export function VietnamMap() {
           Tỉnh/thành không có điểm mốc
         </p>
 
-        <h4>Màu nền cửa sổ thông tin</h4>
-        {(Object.keys(TERRAIN_STYLE) as TerrainType[]).map((k) => (
-          <p key={k}>
-            <i className={styles.dot} style={{ background: TERRAIN_STYLE[k].badge }} />
-            {TERRAIN_STYLE[k].label}
-          </p>
-        ))}
-
-        {/* Khối thứ 3: Danh sách mốc */}
         <h4>Danh sách mốc</h4>
         <ul className={styles.landmarkList}>
           {sortedLandmarks.map((lm) => {
             const isSelected = lm.id === selectedId;
-            const badgeColor = lm.color ?? TERRAIN_COLORS[lm.terrain];
+            const storyTitles = (lm.stories ?? [])
+              .map((s) => (typeof s === 'string' ? s : s.title))
+              .join(' · ');
+
             return (
               <li
                 key={lm.id}
                 role="button"
+                aria-pressed={isSelected}
                 tabIndex={0}
                 className={`${styles.landmarkListItem} ${isSelected ? styles.active : ''}`}
-                onClick={() => focusLandmark(isSelected ? null : lm.id)}
+                style={
+                  {
+                    '--c': lm.theme.color,
+                    '--text-on': lm.theme.textOn,
+                  } as CSSProperties
+                }
+                onClick={() => focusLandmark(lm.id)}
+                onMouseEnter={() => {
+                  cancelClose();
+                  scheduleHover(lm.id);
+                }}
+                onMouseLeave={scheduleClose}
+                onFocus={() => {
+                  cancelClose();
+                  scheduleHover(lm.id);
+                }}
+                onBlur={scheduleClose}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    focusLandmark(isSelected ? null : lm.id);
+                    focusLandmark(lm.id);
                   }
                 }}
                 title={`Mốc ${lm.order}: ${lm.title}`}
               >
-                <span className={styles.badge} style={{ backgroundColor: badgeColor }}>
+                <span
+                  className={styles.badge}
+                  style={{
+                    backgroundColor: lm.theme.color,
+                    color: lm.theme.textOn,
+                  }}
+                >
                   {lm.order}
                 </span>
-                <span className={styles.landmarkItemName}>{lm.title}</span>
+                <div className={styles.landmarkTextCol}>
+                  <span className={styles.landmarkItemName}>{lm.title}</span>
+                  {storyTitles && (
+                    <span className={styles.landmarkStoriesSummary}>{storyTitles}</span>
+                  )}
+                </div>
               </li>
             );
           })}
         </ul>
       </aside>
 
-      {/* Cửa sổ thông tin */}
-      {selectedLandmark && terrain && (
-        <article
-          className={styles.card}
-          style={{ background: terrain.background, borderColor: terrain.border }}
-          aria-live="polite"
-        >
+      {/* Nhóm chọn kiểu bản đồ */}
+      <div
+        ref={basemapRef}
+        className={styles.basemapControl}
+        role="group"
+        aria-label="Kiểu bản đồ"
+      >
+        {([
+          ['map', 'Bản đồ'],
+          ['satellite', 'Vệ tinh'],
+          ['terrain', 'Địa hình'],
+        ] as const).map(([mode, label]) => (
           <button
-            className={styles.close}
-            onClick={() => focusLandmark(null)}
-            aria-label="Đóng"
+            key={mode}
+            type="button"
+            aria-pressed={basemapMode === mode}
+            onClick={() => setBasemapMode(mode)}
           >
-            ×
+            {label}
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className={styles.cardImg}
-            src={selectedLandmark.image}
-            alt={selectedLandmark.title}
-          />
-          <div className={styles.cardBody}>
-            <span className={styles.badge} style={{ background: terrain.badge }}>
-              {terrain.label}
-            </span>
-            <h2>{selectedLandmark.title}</h2>
-            <p className={styles.cardProvince}>{selectedLandmark.province}</p>
-            <p>{selectedLandmark.summary}</p>
-            <Link
-              href={`/landmarks/${selectedLandmark.id}`}
-              className={styles.cta}
-              style={{ background: terrain.border }}
-            >
-              Xem câu chuyện
-            </Link>
-          </div>
-        </article>
-      )}
+        ))}
+      </div>
 
-      {/* Điều khiển */}
-      <div className={styles.controls}>
+      {/* Điều khiển phóng to / thu nhỏ */}
+      <div ref={controlsRef} className={styles.controls}>
         <button onClick={zoomIn} aria-label="Phóng to">
           +
         </button>
@@ -154,7 +381,8 @@ export function VietnamMap() {
         </button>
       </div>
 
-      <button className={styles.mini} onClick={resetView}>
+      {/* Nút Toàn cảnh Việt Nam */}
+      <button ref={miniRef} className={styles.mini} onClick={resetView}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/vietnam.svg" alt="" />
         <span>Toàn cảnh Việt Nam</span>

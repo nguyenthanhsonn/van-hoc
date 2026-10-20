@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "make-mask": "tsx scripts/make-mask.ts",
+    "geocode": "tsx scripts/geocode-landmarks.ts",
+    "audit": "tsx scripts/audit-landmarks.ts",
+    "audit-landmarks": "tsx scripts/audit-landmarks.ts",
+    "find-phan-ri": "tsx scripts/find-phan-ri-mouth.ts"
   },
   "dependencies": {
     "lucide-react": "^1.54.0",
@@ -16,9 +21,11 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@turf/turf": "^7.4.0",
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.0.0"
   }
 }
