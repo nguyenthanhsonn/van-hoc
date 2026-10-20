@@ -169,14 +169,14 @@ export const landmarks: Landmark[] = [
     needsReview: true,
     positionSource: 'bảng người dùng',
     province: 'Khánh Hòa',
-    lngLat: [108.9310, 11.5230],
+    lngLat: [108.9311, 11.5214],
     zoom: 9.5,
     iconType: 'field',
     summary: 'Nương rẫy và cánh đồng gắn với truyện Limo Kapil, Bò thần Kapin.',
     image: '/images/landmarks/nuong-ray-cham.jpg',
     area: { radiusMeters: 500 },
     detailView: {
-      center: [108.9310, 11.5230],
+      center: [108.9311, 11.5214],
       zoom: 16,
     },
     stories: [
@@ -199,14 +199,14 @@ export const landmarks: Landmark[] = [
     needsReview: true,
     positionSource: 'bảng người dùng',
     province: 'Lâm Đồng',
-    lngLat: [108.5492, 11.1633],
+    lngLat: [108.5623, 11.1634],
     zoom: 9.5,
     iconType: 'sea',
     summary: 'Cửa biển gắn với tín ngưỡng thờ Pô Riyak, vị Thần Sóng của người Chăm.',
     image: '/images/landmarks/cua-bien-phan-ri.jpg',
     area: { radiusMeters: 500 },
     detailView: {
-      center: [108.5492, 11.1633],
+      center: [108.5623, 11.1634],
       zoom: 16,
     },
     stories: [

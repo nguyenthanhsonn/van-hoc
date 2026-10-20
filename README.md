@@ -125,8 +125,8 @@ Các điểm mốc di tích và văn hóa được cấu hình tại:
 Bao gồm các mốc:
 1. **Mốc 1: Tháp bà Po Nagar** — Tọa độ: `[109.1958, 12.2654]` (Nha Trang, Khánh Hòa)
 2. **Mốc 3: Núi Đá Trắng (Yang Patao)** — Tọa độ: `[108.896455, 11.558092]` (Ninh Phước, Ninh Thuận)
-3. **Mốc 5: Nương rẫy / Cánh đồng của người Chăm** — Tọa độ: `[108.9180, 11.5300]` (Ninh Thuận)
-4. **Mốc 6: Cửa biển Phan Rí** — Tọa độ: `[108.5528, 11.1764]` (Tuy Phong, Bình Thuận)
+3. **Mốc 5: Nương rẫy / Cánh đồng của người Chăm** — Tọa độ: `[108.9311, 11.5214]` (Ninh Thuận)
+4. **Mốc 6: Cửa biển Phan Rí** — Tọa độ: `[108.5623, 11.1634]` (Tuy Phong, Bình Thuận)
 
 Mỗi mốc có:
 - Tọa độ GPS chính xác `[kinh độ, vĩ độ]`.
