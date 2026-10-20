@@ -1,7 +1,7 @@
 'use client';
 
 // src/features/map/components/LandmarkCallout.tsx
-import { useEffect, useRef, useState, useCallback, type CSSProperties, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, type CSSProperties, type RefObject } from 'react';
 import Link from 'next/link';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import type { Landmark } from '../types';
@@ -48,7 +48,6 @@ export function LandmarkCallout({
   const pathRef = useRef<SVGPathElement | null>(null);
   const rimDotRef = useRef<SVGCircleElement | null>(null);
   const dotRef = useRef<SVGCircleElement | null>(null);
-  const rafIdRef = useRef<number | null>(null);
 
   const handleClose = useCallback(() => {
     setIsClosing(true);
@@ -71,7 +70,7 @@ export function LandmarkCallout({
 
   const lockedDirRef = useRef<Direction | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     lockedDirRef.current = null;
   }, [landmark.id]);
 
@@ -91,7 +90,7 @@ export function LandmarkCallout({
     const cardWidth = isTablet ? 280 : 320;
     const estimatedCardHeight = cardElementRef.current?.offsetHeight || 320;
     const margin = 12;
-    const gap = 32;
+    const gap = 64;
 
     // Calculate actual pixel radius of the landmark area circle on screen
     const meters = landmark.area?.radiusMeters ?? 250;
@@ -197,10 +196,10 @@ export function LandmarkCallout({
       if (chosenDir.includes('right')) {
         chosenCardLeft = Math.min(
           containerRect.width - cardWidth - margin,
-          Math.max(margin, cx + circleRadius + 16)
+          Math.max(margin, cx + circleRadius + gap)
         );
       } else {
-        chosenCardLeft = Math.max(margin, Math.min(containerRect.width - cardWidth - margin, cx - circleRadius - 16 - cardWidth));
+        chosenCardLeft = Math.max(margin, Math.min(containerRect.width - cardWidth - margin, cx - circleRadius - gap - cardWidth));
       }
       chosenCardTop = Math.max(margin, Math.min(containerRect.height - estimatedCardHeight - margin, cy - estimatedCardHeight / 2));
     }
@@ -225,7 +224,8 @@ export function LandmarkCallout({
     // Elbow: diagonal 20px, then horizontal to target
     const diagSignX = isRightSide ? 1 : -1;
     const diagDeltaY = Math.sign(targetY - startY) * Math.min(20, Math.abs(targetY - startY));
-    const elbowX = startX + diagSignX * 20;
+    // Keep the elbow inside short, clamped branches instead of doubling back.
+    const elbowX = startX + diagSignX * Math.min(20, Math.abs(targetX - startX) / 2);
     const elbowY = startY + diagDeltaY;
 
     const pathD = `M ${startX} ${startY} L ${elbowX} ${elbowY} L ${targetX} ${targetY}`;
@@ -251,7 +251,7 @@ export function LandmarkCallout({
   }, [map, landmark, containerRef, obstacleRefs]);
 
   // Synchronous position update on map camera movement (no RAF lag while dragging)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!map) return;
 
     const onMapMove = () => {
@@ -262,26 +262,19 @@ export function LandmarkCallout({
     map.on('zoom', onMapMove);
     map.on('resize', onMapMove);
 
+    // Measure before the first paint so the branch grows from its final position.
     updateLayout();
-    const t1 = setTimeout(updateLayout, 16);
-    const t2 = setTimeout(updateLayout, 80);
-    const t3 = setTimeout(() => {
-      if (pathRef.current) {
-        pathRef.current.style.animation = 'none';
-        pathRef.current.style.strokeDashoffset = '0';
-        pathRef.current.style.strokeDasharray = 'none';
-      }
-    }, 550);
+    const observer = new ResizeObserver(updateLayout);
+    if (cardElementRef.current) observer.observe(cardElementRef.current);
+    if (containerRef.current) observer.observe(containerRef.current);
 
     return () => {
       map.off('move', onMapMove);
       map.off('zoom', onMapMove);
       map.off('resize', onMapMove);
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
+      observer.disconnect();
     };
-  }, [map, updateLayout]);
+  }, [map, updateLayout, containerRef]);
 
   const themeStyle = {
     '--c': landmark.theme.color,

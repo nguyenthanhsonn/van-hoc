@@ -111,15 +111,17 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   fill: none;
-  stroke-dasharray: 1;
+  stroke-dasharray: 1 1;
   stroke-dashoffset: 1;
-  animation: drawLine 450ms cubic-bezier(0.16, 1, 0.3, 1) 60ms forwards;
+  animation: drawLine 720ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .svgDot {
   fill: var(--c);
   opacity: 0;
-  animation: dotIn 180ms ease-out 420ms forwards;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dotIn 200ms ease-out 620ms both;
 }
 
 .svgRimDot {
@@ -127,7 +129,9 @@
   stroke: #ffffff;
   stroke-width: 2.5;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
-  animation: dotIn 180ms ease-out 80ms both;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dotIn 180ms ease-out both;
 }
 
 .cardImageCover {
@@ -174,7 +178,7 @@
   padding: 16px 18px;
   pointer-events: auto;
   box-sizing: border-box;
-  animation: cardIn 250ms ease-out 300ms both;
+  animation: cardIn 360ms cubic-bezier(0.22, 1, 0.36, 1) 520ms both;
 }
 
 @media (max-width: 1023px) and (min-width: 640px) {

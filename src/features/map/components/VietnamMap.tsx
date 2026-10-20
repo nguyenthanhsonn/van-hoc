@@ -46,6 +46,7 @@ export function VietnamMap() {
   const basemapRef = useRef<HTMLDivElement | null>(null);
   const miniRef = useRef<HTMLButtonElement | null>(null);
   const editRef = useRef<HTMLElement | null>(null);
+  const calloutObstacles = useMemo(() => [legendRef, controlsRef, basemapRef, miniRef, editRef], []);
 
   // Responsive device check: mobile is strictly < 640px (smartphones)
   // Tablets (640px - 1023px) and Desktops enjoy rich callout branches and tablet-optimized sidebar
@@ -99,7 +100,7 @@ export function VietnamMap() {
           containerRef={mapContainerRef}
           isPinned={false}
           onClose={scheduleClose}
-          obstacleRefs={[legendRef, controlsRef, basemapRef, miniRef, editRef]}
+          obstacleRefs={calloutObstacles}
           onCardMouseEnter={cancelClose}
           onCardMouseLeave={scheduleClose}
         />

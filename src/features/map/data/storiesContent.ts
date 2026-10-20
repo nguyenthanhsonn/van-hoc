@@ -12,7 +12,7 @@ export type StoryContent = {
 export const storiesContent: Record<string, StoryContent> = {
   'nu-than-po-nagar': {
     subtitle: 'Từ câu chuyện về một vị nữ thần, tìm hiểu cách con người hình dung về cội nguồn cuộc sống.',
-    heroImage: '/images/landmarks/thap-ba-po-nagar.jpg', readingMinutes: 2,
+    heroImage: '/images/landmarks/po-nagar-reference.png', readingMinutes: 2,
     sections: [
       { heading: 'Một thế giới được sắp đặt', paragraphs: [
         'Trong phần giới thiệu thần thoại, Po Nagar, còn được gọi là Mụ Dụ, là vị thần tối cao được sai xuống trần gian để tái lập trật tự vũ trụ. Câu chuyện đặt người đọc trước câu hỏi về sự hình thành và trật tự của thế giới.', // MOCK: thay bằng nội dung thật
