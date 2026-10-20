@@ -184,7 +184,15 @@ export function useVietnamMap(): UseVietnamMapReturn {
 
   const selectedLandmark = activeLandmarks.find((l) => l.id === selectedId) ?? null;
 
+  const [isFlying, setIsFlying] = useState<boolean>(false);
+  const isFlyingRef = useRef<boolean>(false);
+  const flightTargetIdRef = useRef<string | null>(null);
+  const flightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [hoveredLandmarkId, setHoveredLandmarkId] = useState<string | null>(null);
+  const hoveredLandmarkIdRef = useRef<string | null>(null);
+  hoveredLandmarkIdRef.current = hoveredLandmarkId;
+
   const [clusterTooltip, setClusterTooltip] = useState<{
     x: number;
     y: number;
@@ -200,9 +208,11 @@ export function useVietnamMap(): UseVietnamMapReturn {
       closeTimerRef.current = null;
     }
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    // Instant switch when moving between different landmarks, snappy 50ms on first hover
+    const delay = hoveredLandmarkIdRef.current && hoveredLandmarkIdRef.current !== id ? 0 : 50;
     hoverTimerRef.current = setTimeout(() => {
       setHoveredLandmarkId(id);
-    }, 80);
+    }, delay);
   }, []);
 
   const scheduleClose = useCallback(() => {
@@ -229,6 +239,36 @@ export function useVietnamMap(): UseVietnamMapReturn {
   scheduleCloseRef.current = scheduleClose;
   const setClusterTooltipRef = useRef(setClusterTooltip);
   setClusterTooltipRef.current = setClusterTooltip;
+
+  // Control hover layers: outer halo ring and z-index elevation for hovered landmark
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const updateHoverState = () => {
+      const activeId = hoveredLandmarkId;
+      const filter = activeId
+        ? ['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], activeId]]
+        : ['==', ['get', 'id'], ''];
+
+      if (map.getLayer('landmark-hover-halo')) {
+        map.setFilter('landmark-hover-halo', filter as any);
+      }
+      if (map.getLayer('landmark-hover-point')) {
+        map.setFilter('landmark-hover-point', filter as any);
+      }
+      if (map.getLayer('landmark-hover-order')) {
+        map.setFilter('landmark-hover-order', filter as any);
+      }
+      if (map.getLayer('landmark-hover-names')) {
+        map.setFilter('landmark-hover-names', filter as any);
+      }
+    };
+    if (map.isStyleLoaded()) {
+      updateHoverState();
+    } else {
+      map.once('load', updateHoverState);
+    }
+  }, [hoveredLandmarkId]);
 
   const [editState, setEditState] = useState<EditState | null>(null);
   const allCoordinatesRef = useRef<Record<string, [number, number]>>(
@@ -261,6 +301,11 @@ export function useVietnamMap(): UseVietnamMapReturn {
   const focusLandmark = useCallback((id: string | null) => {
     const map = mapRef.current;
     if (id && !activeLandmarks.some((lm) => lm.id === id)) return;
+    if (flightTimeoutRef.current) {
+      clearTimeout(flightTimeoutRef.current);
+      flightTimeoutRef.current = null;
+    }
+
     selectedIdRef.current = id;
     setSelectedId(id);
 
@@ -268,9 +313,10 @@ export function useVietnamMap(): UseVietnamMapReturn {
 
     applyBasemapMode(map, modeRef.current, id);
     if (!id) {
-      if (map.getLayer('landmark-selected')) {
-        map.setFilter('landmark-selected', ['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], '']]);
-      }
+      flightTargetIdRef.current = null;
+      isFlyingRef.current = false;
+      setIsFlying(false);
+
       if (map.getLayer('province-selected')) {
         map.setFilter('province-selected', ['==', ['get', '_key'], '']);
       }
@@ -285,11 +331,6 @@ export function useVietnamMap(): UseVietnamMapReturn {
     const lm = activeLandmarks.find((l) => l.id === id);
     if (!lm) return;
 
-    // Highlight selected landmark point circle
-    if (map.getLayer('landmark-selected')) {
-      map.setFilter('landmark-selected', ['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], id]]);
-    }
-
     // Highlight selected province
     if (map.getLayer('province-selected')) {
       map.setFilter('province-selected', [
@@ -302,22 +343,62 @@ export function useVietnamMap(): UseVietnamMapReturn {
     // Fly camera to landmark detailView with responsive padding
     const center = lm.detailView?.center ?? [lm.lngLat[0], lm.lngLat[1]];
     const zoom = lm.detailView?.zoom ?? 16;
-    const isMobile =
-      typeof window !== 'undefined' &&
-      (window.innerWidth < 640 || window.matchMedia('(pointer: coarse)').matches);
+    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const isMobilePhone = windowWidth < 640;
+    const isTablet = windowWidth >= 640 && windowWidth < 1024;
     const containerHeight = map.getContainer().clientHeight;
 
-    map.flyTo({
-      center,
-      zoom,
-      pitch: lm.detailView?.pitch ?? 0,
-      bearing: lm.detailView?.bearing ?? 0,
-      duration: 1800,
-      essential: true,
-      padding: isMobile
-        ? { top: 20, bottom: Math.round(containerHeight * 0.55), left: 20, right: 20 }
-        : { top: 40, bottom: 40, left: 40, right: 40 },
-    });
+    flightTargetIdRef.current = id;
+
+    const curCenter = map.getCenter();
+    const curZoom = map.getZoom();
+    const isAlreadyThere =
+      Math.abs(curCenter.lng - center[0]) < 0.0001 &&
+      Math.abs(curCenter.lat - center[1]) < 0.0001 &&
+      Math.abs(curZoom - zoom) < 0.1;
+
+    if (isAlreadyThere) {
+      isFlyingRef.current = false;
+      setIsFlying(false);
+    } else {
+      isFlyingRef.current = true;
+      setIsFlying(true);
+
+      const onMoveEnd = () => {
+        if (flightTimeoutRef.current) {
+          clearTimeout(flightTimeoutRef.current);
+          flightTimeoutRef.current = null;
+        }
+        if (flightTargetIdRef.current === id) {
+          isFlyingRef.current = false;
+          setIsFlying(false);
+        }
+      };
+
+      map.once('moveend', onMoveEnd);
+
+      // Fallback timer if moveend does not fire
+      flightTimeoutRef.current = setTimeout(() => {
+        if (flightTargetIdRef.current === id) {
+          isFlyingRef.current = false;
+          setIsFlying(false);
+        }
+      }, 2100);
+
+      map.flyTo({
+        center,
+        zoom,
+        pitch: lm.detailView?.pitch ?? 0,
+        bearing: lm.detailView?.bearing ?? 0,
+        duration: 1800,
+        essential: true,
+        padding: isMobilePhone
+          ? { top: 20, bottom: Math.round(containerHeight * 0.55), left: 20, right: 20 }
+          : isTablet
+          ? { top: 40, bottom: 40, left: 40, right: 320 }
+          : { top: 40, bottom: 40, left: 40, right: 370 },
+      });
+    }
 
     // Sync URL query ?mo=<slug>
     if (typeof window !== 'undefined') {
@@ -700,10 +781,20 @@ export function useVietnamMap(): UseVietnamMapReturn {
           paint: { 'text-color': '#4f8aa8' },
         });
 
+        const sortedLandmarksForAreas = [...activeLandmarks.filter((lm) => lm.area)].sort((a, b) => {
+          const rA = a.area?.radiusMeters ?? 250;
+          const rB = b.area?.radiusMeters ?? 250;
+          return rB - rA; // Larger radius FIRST, smaller radius LAST (drawn on top)
+        });
+
         map.addSource('landmark-areas', {
           type: 'geojson',
-          data: featureCollection(activeLandmarks.filter((lm) => lm.area).map((lm) => {
-            const properties = { id: lm.id, color: lm.theme.color };
+          data: featureCollection(sortedLandmarksForAreas.map((lm) => {
+            const properties = {
+              id: lm.id,
+              color: lm.theme.color,
+              radiusMeters: lm.area?.radiusMeters ?? 250,
+            };
             const ring = lm.area?.polygon;
             if (ring && ring.length >= 3) {
               const closed = [...ring];
@@ -718,6 +809,8 @@ export function useVietnamMap(): UseVietnamMapReturn {
           minzoom: ZOOM.areaFrom, paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.12 } });
         map.addLayer({ id: 'landmark-area-line', type: 'line', source: 'landmark-areas',
           minzoom: ZOOM.areaFrom, paint: { 'line-color': ['get', 'color'], 'line-width': 1.5, 'line-dasharray': [3, 2] } });
+        map.addLayer({ id: 'landmark-area-line-hover', type: 'line', source: 'landmark-areas',
+          minzoom: ZOOM.areaFrom, filter: ['==', ['get', 'id'], ''], paint: { 'line-color': '#ffffff', 'line-width': 2.5, 'line-dasharray': [3, 2] } });
 
         // 6. Sub-Landmarks Source & Layers (Zoom levels 12-16)
         const subFeatures: GeoJSONFeature[] = [];
@@ -846,35 +939,187 @@ export function useVietnamMap(): UseVietnamMapReturn {
             'circle-stroke-color': '#ffffff',
             'circle-stroke-width': 3,
           } });
-        map.addLayer({ id: 'landmark-selected', type: 'circle', source: 'landmarks',
-          filter: ['==', ['get', 'id'], ''], paint: {
-            'circle-color': 'rgba(0,0,0,0)', 'circle-radius': 19,
-            'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 4,
-          } });
         map.addLayer({ id: 'landmark-order', type: 'symbol', source: 'landmarks',
           filter: ['!', ['has', 'point_count']], layout: {
             'text-field': ['to-string', ['get', 'order']], 'text-font': ['Noto Sans Regular'],
             'text-size': 13, 'text-allow-overlap': true, 'text-ignore-placement': true,
           }, paint: { 'text-color': ['get', 'textOn'] } });
 
-        const onPinClick = (event: MapLayerMouseEvent) => {
-          const id: unknown = event.features?.[0]?.properties?.id;
-          if (typeof id === 'string') focusLandmark(id);
+        // Landmark names label below pin
+        map.addLayer({
+          id: 'landmark-names',
+          filter: ['!', ['has', 'point_count']],
+          type: 'symbol',
+          source: 'landmarks',
+          minzoom: ZOOM.showNames,
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': 11.5,
+            'text-offset': [0, 0.8],
+            'text-anchor': 'top',
+            'text-max-width': 8,
+            'text-allow-overlap': false,
+          },
+          paint: {
+            'text-color': '#1b4332',
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 2,
+          },
+        });
+
+        // Hovered landmark top-layer (highest z-index so hovered pin & ring is on top of adjacent pins)
+        map.addLayer({
+          id: 'landmark-hover-halo',
+          type: 'circle',
+          source: 'landmarks',
+          filter: ['==', ['get', 'id'], ''],
+          paint: {
+            'circle-color': 'rgba(0,0,0,0)',
+            'circle-radius': 19,
+            'circle-stroke-color': ['get', 'color'],
+            'circle-stroke-width': 4,
+          },
+        });
+
+        map.addLayer({
+          id: 'landmark-hover-point',
+          type: 'circle',
+          source: 'landmarks',
+          filter: ['==', ['get', 'id'], ''],
+          paint: {
+            'circle-color': ['get', 'color'],
+            'circle-radius': 13,
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 3,
+          },
+        });
+
+        map.addLayer({
+          id: 'landmark-hover-order',
+          type: 'symbol',
+          source: 'landmarks',
+          filter: ['==', ['get', 'id'], ''],
+          layout: {
+            'text-field': ['to-string', ['get', 'order']],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': 13,
+            'text-allow-overlap': true,
+            'text-ignore-placement': true,
+          },
+          paint: {
+            'text-color': ['get', 'textOn'],
+          },
+        });
+
+        map.addLayer({
+          id: 'landmark-hover-names',
+          type: 'symbol',
+          source: 'landmarks',
+          filter: ['==', ['get', 'id'], ''],
+          minzoom: ZOOM.showNames,
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': 11.5,
+            'text-offset': [0, 0.8],
+            'text-anchor': 'top',
+            'text-max-width': 8,
+            'text-allow-overlap': true,
+            'text-ignore-placement': true,
+          },
+          paint: {
+            'text-color': '#1b4332',
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 2,
+          },
+        });
+
+        const applyHoverFilter = (id: string | null) => {
+          const filter = id
+            ? ['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], id]]
+            : ['==', ['get', 'id'], ''];
+
+          if (map.getLayer('landmark-hover-halo')) {
+            map.setFilter('landmark-hover-halo', filter as any);
+          }
+          if (map.getLayer('landmark-hover-point')) {
+            map.setFilter('landmark-hover-point', filter as any);
+          }
+          if (map.getLayer('landmark-hover-order')) {
+            map.setFilter('landmark-hover-order', filter as any);
+          }
+          if (map.getLayer('landmark-hover-names')) {
+            map.setFilter('landmark-hover-names', filter as any);
+          }
+          if (map.getLayer('landmark-area-line-hover')) {
+            map.setFilter('landmark-area-line-hover', ['==', ['get', 'id'], id ?? '']);
+          }
         };
-        const onPinEnter = (event: MapLayerMouseEvent) => {
-          map.getCanvas().style.cursor = 'pointer';
-          const id: unknown = event.features?.[0]?.properties?.id;
-          if (typeof id === 'string') {
+
+        const resolveHoveredLandmarkId = (event: MapLayerMouseEvent): string | null => {
+          // 1. Give highest priority to whichever landmark pin center is closest to the cursor
+          const cursorPt = event.point;
+          let closestPinId: string | null = null;
+          let minPinDist = 22; // within 22px of pin center
+
+          for (const lm of activeLandmarks) {
+            const screenPt = map.project([lm.lngLat[0], lm.lngLat[1]]);
+            const dist = Math.hypot(cursorPt.x - screenPt.x, cursorPt.y - screenPt.y);
+            if (dist < minPinDist) {
+              minPinDist = dist;
+              closestPinId = lm.id;
+            }
+          }
+
+          if (closestPinId) {
+            return closestPinId;
+          }
+
+          // 2. If not directly over a pin, check landmark area under cursor
+          const features = map.queryRenderedFeatures(event.point, {
+            layers: ['landmark-area-fill'],
+          });
+          if (!features || features.length === 0) return null;
+
+          if (features.length === 1) {
+            return String(features[0].properties?.id ?? '');
+          }
+
+          // Sort by radius ascending so inner/smaller circle (e.g. 250m purple) wins over outer (500m green)
+          const sorted = [...features].sort((a, b) => {
+            const rA = Number(a.properties?.radiusMeters ?? 250);
+            const rB = Number(b.properties?.radiusMeters ?? 250);
+            return rA - rB;
+          });
+          return String(sorted[0].properties?.id ?? '');
+        };
+
+        const onLandmarkHover = (event: MapLayerMouseEvent) => {
+          if (isFlyingRef.current) return;
+          const targetId = resolveHoveredLandmarkId(event);
+          if (targetId) {
+            map.getCanvas().style.cursor = 'pointer';
+            applyHoverFilter(targetId);
             if (closeTimerRef.current) {
               clearTimeout(closeTimerRef.current);
               closeTimerRef.current = null;
             }
-            scheduleHoverRef.current(id);
+            scheduleHoverRef.current(targetId);
+          } else {
+            onLandmarkLeave();
           }
         };
-        const onPinLeave = () => {
+
+        const onLandmarkLeave = () => {
           map.getCanvas().style.cursor = '';
+          applyHoverFilter(null);
           scheduleCloseRef.current();
+        };
+
+        const onLandmarkClick = (event: MapLayerMouseEvent) => {
+          const id = resolveHoveredLandmarkId(event);
+          if (id) focusLandmark(id);
         };
 
         const onClusterClick = async (event: MapLayerMouseEvent) => {
@@ -920,11 +1165,22 @@ export function useVietnamMap(): UseVietnamMapReturn {
         };
         map.on('movestart', onMoveStart);
 
-        const pinLayers = ['landmark-points', 'landmark-order', 'landmark-names'];
-        pinLayers.forEach((layerId) => {
-          map.on('mouseenter', layerId, onPinEnter);
-          map.on('mouseleave', layerId, onPinLeave);
-          map.on('click', layerId, onPinClick);
+        const landmarkInteractiveLayers = [
+          'landmark-points',
+          'landmark-order',
+          'landmark-names',
+          'landmark-hover-halo',
+          'landmark-hover-point',
+          'landmark-hover-order',
+          'landmark-hover-names',
+          'landmark-area-fill',
+          'landmark-area-line',
+        ];
+        landmarkInteractiveLayers.forEach((layerId) => {
+          map.on('mouseenter', layerId, onLandmarkHover);
+          map.on('mousemove', layerId, onLandmarkHover);
+          map.on('mouseleave', layerId, onLandmarkLeave);
+          map.on('click', layerId, onLandmarkClick);
         });
 
         map.on('mouseenter', 'clusters', onClusterEnter);
@@ -932,7 +1188,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
         map.on('click', 'clusters', onClusterClick);
 
         const onMapClick = (e: MapLayerMouseEvent) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: ['landmark-points', 'landmark-order', 'clusters'] });
+          const features = map.queryRenderedFeatures(e.point, { layers: ['landmark-points', 'landmark-order', 'clusters', 'landmark-area-fill'] });
           if (!features || features.length === 0) {
             focusLandmark(null);
           }
@@ -940,10 +1196,11 @@ export function useVietnamMap(): UseVietnamMapReturn {
         map.on('click', onMapClick);
 
         cleanups.push(() => {
-          pinLayers.forEach((layerId) => {
-            map.off('mouseenter', layerId, onPinEnter);
-            map.off('mouseleave', layerId, onPinLeave);
-            map.off('click', layerId, onPinClick);
+          landmarkInteractiveLayers.forEach((layerId) => {
+            map.off('mouseenter', layerId, onLandmarkHover);
+            map.off('mousemove', layerId, onLandmarkHover);
+            map.off('mouseleave', layerId, onLandmarkLeave);
+            map.off('click', layerId, onLandmarkClick);
           });
 
           map.off('mouseenter', 'clusters', onClusterEnter);
@@ -952,29 +1209,6 @@ export function useVietnamMap(): UseVietnamMapReturn {
 
           map.off('movestart', onMoveStart);
           map.off('click', onMapClick);
-        });
-
-        // Landmark names label below pin
-        map.addLayer({
-          id: 'landmark-names',
-          filter: ['!', ['has', 'point_count']],
-          type: 'symbol',
-          source: 'landmarks',
-          minzoom: ZOOM.showNames,
-          layout: {
-            'text-field': ['get', 'name'],
-            'text-font': ['Noto Sans Regular'],
-            'text-size': 11.5,
-            'text-offset': [0, 0.8],
-            'text-anchor': 'top',
-            'text-max-width': 8,
-            'text-allow-overlap': false,
-          },
-          paint: {
-            'text-color': '#1b4332',
-            'text-halo-color': '#ffffff',
-            'text-halo-width': 2,
-          },
         });
 
         for (const layer of ['island-dots', 'province-labels', 'archipelago-labels', 'sea-label']) map.moveLayer(layer);
@@ -1074,6 +1308,10 @@ export function useVietnamMap(): UseVietnamMapReturn {
     return () => {
       cancelled = true;
       abort.abort();
+      if (flightTimeoutRef.current) {
+        clearTimeout(flightTimeoutRef.current);
+        flightTimeoutRef.current = null;
+      }
       hoveredFeatureKeyRef.current = null;
       cleanups.forEach((cleanup) => cleanup());
       map.off('load', onLoad);
@@ -1097,6 +1335,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
     landmarks: activeLandmarks,
     selectedLandmark,
     selectedId,
+    isFlying,
     hoveredLandmarkId,
     scheduleHover,
     scheduleClose,

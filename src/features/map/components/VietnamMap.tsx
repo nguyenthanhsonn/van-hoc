@@ -21,6 +21,7 @@ export function VietnamMap() {
     focusLandmark,
     selectedId,
     selectedLandmark,
+    isFlying,
     resetView,
     zoomIn,
     zoomOut,
@@ -28,7 +29,6 @@ export function VietnamMap() {
     errorMessage,
     landmarks,
     hoveredLandmarkId,
-    scheduleHover,
     scheduleClose,
     cancelClose,
     clusterTooltip,
@@ -47,16 +47,11 @@ export function VietnamMap() {
   const miniRef = useRef<HTMLButtonElement | null>(null);
   const editRef = useRef<HTMLElement | null>(null);
 
-  // Responsive device check for hover capability
+  // Responsive device check: mobile is strictly < 640px (smartphones)
+  // Tablets (640px - 1023px) and Desktops enjoy rich callout branches and tablet-optimized sidebar
   useEffect(() => {
     const checkMobile = () => {
-      const hasTouchOnly =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(pointer: coarse)').matches &&
-        !window.matchMedia('(hover: hover)').matches;
-      setIsMobile(
-        typeof window !== 'undefined' && (window.innerWidth < 640 || hasTouchOnly)
-      );
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth < 640);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -68,19 +63,17 @@ export function VietnamMap() {
     [landmarks]
   );
 
-  // Active landmark for Desktop/Tablet Callout
+  // Active landmark for Desktop/Tablet Callout - ONLY when hovering
   const calloutLandmark = useMemo(() => {
-    // If user is hovering any landmark, always show Callout
+    // Only display callout AFTER the camera has arrived at the destination
+    if (isFlying) return null;
+
+    // Callout ONLY appears on hover ("chỉ khi hover vô nó mới cho hiện cái nhánh câu chuyện")
     if (hoveredLandmarkId) {
       return landmarks.find((l) => l.id === hoveredLandmarkId) ?? null;
     }
-    // If a landmark was clicked/pinned: mobile uses bottom sheet, desktop/tablet uses callout
-    if (selectedLandmark) {
-      if (isMobile) return null;
-      return selectedLandmark;
-    }
     return null;
-  }, [isMobile, selectedLandmark, hoveredLandmarkId, landmarks]);
+  }, [isFlying, hoveredLandmarkId, landmarks]);
 
   return (
     <div className={styles.root} data-detail={Boolean(selectedLandmark)}>
@@ -97,14 +90,15 @@ export function VietnamMap() {
 
       <div ref={mapContainerRef} className={styles.map} />
 
-      {/* CALLOUT (Desktop & Tablet) */}
+      {/* CALLOUT (Desktop & Tablet) - Only appears on hover */}
       {calloutLandmark && (
         <LandmarkCallout
+          key={calloutLandmark.id}
           landmark={calloutLandmark}
           map={mapInstance}
           containerRef={mapContainerRef}
-          isPinned={Boolean(selectedId)}
-          onClose={() => focusLandmark(null)}
+          isPinned={false}
+          onClose={scheduleClose}
           obstacleRefs={[legendRef, controlsRef, basemapRef, miniRef, editRef]}
           onCardMouseEnter={cancelClose}
           onCardMouseLeave={scheduleClose}
@@ -112,7 +106,7 @@ export function VietnamMap() {
       )}
 
       {/* MOBILE BOTTOM SHEET (Touch & < 640px) */}
-      {isMobile && selectedLandmark && (
+      {!isFlying && isMobile && selectedLandmark && (
         <MobileBottomSheet
           landmark={selectedLandmark}
           onClose={() => focusLandmark(null)}
@@ -306,16 +300,6 @@ export function VietnamMap() {
                   } as CSSProperties
                 }
                 onClick={() => focusLandmark(lm.id)}
-                onMouseEnter={() => {
-                  cancelClose();
-                  scheduleHover(lm.id);
-                }}
-                onMouseLeave={scheduleClose}
-                onFocus={() => {
-                  cancelClose();
-                  scheduleHover(lm.id);
-                }}
-                onBlur={scheduleClose}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();

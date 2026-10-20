@@ -43,10 +43,10 @@ export function LandmarkCallout({
   const [imageError, setImageError] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  const circleAnchorRef = useRef<HTMLDivElement | null>(null);
   const cardAnchorRef = useRef<HTMLDivElement | null>(null);
   const cardElementRef = useRef<HTMLDivElement | null>(null);
   const pathRef = useRef<SVGPathElement | null>(null);
+  const rimDotRef = useRef<SVGCircleElement | null>(null);
   const dotRef = useRef<SVGCircleElement | null>(null);
   const rafIdRef = useRef<number | null>(null);
 
@@ -69,6 +69,12 @@ export function LandmarkCallout({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleClose]);
 
+  const lockedDirRef = useRef<Direction | null>(null);
+
+  useEffect(() => {
+    lockedDirRef.current = null;
+  }, [landmark.id]);
+
   // Position calculation & direct DOM updates (0 React re-renders on map pan/zoom)
   const updateLayout = useCallback(() => {
     if (!map || !containerRef.current) return;
@@ -81,13 +87,18 @@ export function LandmarkCallout({
     const cx = pt.x;
     const cy = pt.y;
 
-    // Check circle diameter: 96px (>=1024), 80px (640-1023)
     const isTablet = containerRect.width < 1024;
-    const circleRadius = isTablet ? 40 : 48;
     const cardWidth = isTablet ? 280 : 320;
-    const estimatedCardHeight = cardElementRef.current?.offsetHeight || 280;
+    const estimatedCardHeight = cardElementRef.current?.offsetHeight || 320;
     const margin = 12;
-    const gap = 56;
+    const gap = 32;
+
+    // Calculate actual pixel radius of the landmark area circle on screen
+    const meters = landmark.area?.radiusMeters ?? 250;
+    const dLat = meters / 111320;
+    const ptEdge = map.project([landmark.lngLat[0], landmark.lngLat[1] + dLat]);
+    const areaRadiusPx = Math.hypot(cx - ptEdge.x, cy - ptEdge.y);
+    const circleRadius = map.getZoom() >= 9 && areaRadiusPx > 15 ? Math.round(areaRadiusPx) : (isTablet ? 32 : 40);
 
     // Get obstacle boxes relative to container
     const obstacles: ObstacleBox[] = [];
@@ -112,12 +123,16 @@ export function LandmarkCallout({
       );
     };
 
-    let chosenDir: Direction = 'right';
+    let chosenDir: Direction = lockedDirRef.current || 'right';
     let chosenCardLeft = 0;
     let chosenCardTop = 0;
     let foundValid = false;
 
-    for (const dir of DIRECTIONS) {
+    const candidateDirs = lockedDirRef.current
+      ? [lockedDirRef.current, ...DIRECTIONS.filter((d) => d !== lockedDirRef.current)]
+      : DIRECTIONS;
+
+    for (const dir of candidateDirs) {
       let cardLeft = 0;
       let cardTop = 0;
 
@@ -132,19 +147,19 @@ export function LandmarkCallout({
           break;
         case 'right-top':
           cardLeft = cx + circleRadius + gap;
-          cardTop = cy - estimatedCardHeight + 20;
+          cardTop = cy - estimatedCardHeight + 30;
           break;
         case 'left-top':
           cardLeft = cx - circleRadius - gap - cardWidth;
-          cardTop = cy - estimatedCardHeight + 20;
+          cardTop = cy - estimatedCardHeight + 30;
           break;
         case 'right-bottom':
           cardLeft = cx + circleRadius + gap;
-          cardTop = cy - 20;
+          cardTop = cy - 30;
           break;
         case 'left-bottom':
           cardLeft = cx - circleRadius - gap - cardWidth;
-          cardTop = cy - 20;
+          cardTop = cy - 30;
           break;
       }
 
@@ -168,6 +183,7 @@ export function LandmarkCallout({
       const collides = obstacles.some((obs) => testIntersection(box, obs));
       if (!collides) {
         chosenDir = dir;
+        lockedDirRef.current = dir;
         chosenCardLeft = cardLeft;
         chosenCardTop = cardTop;
         foundValid = true;
@@ -177,21 +193,16 @@ export function LandmarkCallout({
 
     // Fallback: clamp inside container
     if (!foundValid) {
-      chosenDir = cx < containerRect.width / 2 ? 'right' : 'left';
-      if (chosenDir === 'right') {
+      chosenDir = lockedDirRef.current || (cx < containerRect.width / 2 ? 'right' : 'left');
+      if (chosenDir.includes('right')) {
         chosenCardLeft = Math.min(
           containerRect.width - cardWidth - margin,
-          Math.max(margin, cx + circleRadius + 24)
+          Math.max(margin, cx + circleRadius + 16)
         );
       } else {
-        chosenCardLeft = Math.max(margin, Math.min(containerRect.width - cardWidth - margin, cx - circleRadius - 24 - cardWidth));
+        chosenCardLeft = Math.max(margin, Math.min(containerRect.width - cardWidth - margin, cx - circleRadius - 16 - cardWidth));
       }
       chosenCardTop = Math.max(margin, Math.min(containerRect.height - estimatedCardHeight - margin, cy - estimatedCardHeight / 2));
-    }
-
-    // Update Circle position
-    if (circleAnchorRef.current) {
-      circleAnchorRef.current.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
     }
 
     // Update Card position
@@ -199,8 +210,8 @@ export function LandmarkCallout({
       cardAnchorRef.current.style.transform = `translate3d(${chosenCardLeft}px, ${chosenCardTop}px, 0)`;
     }
 
-    // Update SVG Line (from circle edge to card edge)
-    const isRightSide = chosenDir.includes('right') || chosenCardLeft >= cx;
+    // Update SVG Line (from circle rim to card edge)
+    const isRightSide = chosenCardLeft >= cx;
     const startX = isRightSide ? cx + circleRadius : cx - circleRadius;
     const startY = cy;
 
@@ -211,10 +222,10 @@ export function LandmarkCallout({
       Math.min(chosenCardTop + estimatedCardHeight - 24, cy)
     );
 
-    // Elbow: diagonal 24px, then horizontal to target
+    // Elbow: diagonal 20px, then horizontal to target
     const diagSignX = isRightSide ? 1 : -1;
-    const diagDeltaY = Math.sign(targetY - startY) * Math.min(16, Math.abs(targetY - startY));
-    const elbowX = startX + diagSignX * 18;
+    const diagDeltaY = Math.sign(targetY - startY) * Math.min(20, Math.abs(targetY - startY));
+    const elbowX = startX + diagSignX * 20;
     const elbowY = startY + diagDeltaY;
 
     const pathD = `M ${startX} ${startY} L ${elbowX} ${elbowY} L ${targetX} ${targetY}`;
@@ -228,19 +239,23 @@ export function LandmarkCallout({
       }
     }
 
+    if (rimDotRef.current) {
+      rimDotRef.current.setAttribute('cx', String(startX));
+      rimDotRef.current.setAttribute('cy', String(startY));
+    }
+
     if (dotRef.current) {
       dotRef.current.setAttribute('cx', String(targetX));
       dotRef.current.setAttribute('cy', String(targetY));
     }
   }, [map, landmark, containerRef, obstacleRefs]);
 
-  // Request Animation Frame on map camera movement
+  // Synchronous position update on map camera movement (no RAF lag while dragging)
   useEffect(() => {
     if (!map) return;
 
     const onMapMove = () => {
-      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = requestAnimationFrame(updateLayout);
+      updateLayout();
     };
 
     map.on('move', onMapMove);
@@ -250,6 +265,13 @@ export function LandmarkCallout({
     updateLayout();
     const t1 = setTimeout(updateLayout, 16);
     const t2 = setTimeout(updateLayout, 80);
+    const t3 = setTimeout(() => {
+      if (pathRef.current) {
+        pathRef.current.style.animation = 'none';
+        pathRef.current.style.strokeDashoffset = '0';
+        pathRef.current.style.strokeDasharray = 'none';
+      }
+    }, 550);
 
     return () => {
       map.off('move', onMapMove);
@@ -257,7 +279,7 @@ export function LandmarkCallout({
       map.off('resize', onMapMove);
       clearTimeout(t1);
       clearTimeout(t2);
-      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      clearTimeout(t3);
     };
   }, [map, updateLayout]);
 
@@ -268,44 +290,14 @@ export function LandmarkCallout({
 
   return (
     <div className={styles.overlay} style={themeStyle} aria-live="polite">
-      {/* SVG Connecting Line */}
+      {/* SVG Connecting Line branching from the rim of the circle */}
       <svg className={styles.svgLayer} aria-hidden="true">
         <path ref={pathRef} className={styles.svgPath} pathLength={1} />
-        <circle ref={dotRef} className={styles.svgDot} r={3} />
+        <circle ref={rimDotRef} className={styles.svgRimDot} r={5} />
+        <circle ref={dotRef} className={styles.svgDot} r={3.5} />
       </svg>
 
-      {/* 1) VÒNG TRÒN ẢNH */}
-      <div ref={circleAnchorRef} className={styles.circleAnchor}>
-        <div
-          className={styles.circleWrapper}
-          onClick={isPinned ? undefined : () => map?.flyTo({ center: [landmark.lngLat[0], landmark.lngLat[1]], zoom: 16, essential: true })}
-          onMouseEnter={onCardMouseEnter}
-          onMouseLeave={onCardMouseLeave}
-          title={`Mốc ${landmark.order}: ${landmark.title}`}
-        >
-          {landmark.image && !imageError ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={landmark.image}
-              alt={landmark.title}
-              className={styles.circleImg}
-              loading="lazy"
-              decoding="async"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className={styles.circleGradientFallback}>
-              <span>{landmark.order}</span>
-            </div>
-          )}
-          <div className={styles.rotatingRing} aria-hidden="true" />
-          <div className={styles.circleBadge} aria-hidden="true">
-            {landmark.order}
-          </div>
-        </div>
-      </div>
-
-      {/* 2) THẺ THÔNG TIN */}
+      {/* THẺ THÔNG TIN CÂU CHUYỆN */}
       <div ref={cardAnchorRef} className={styles.cardAnchor}>
         <article
           ref={cardElementRef}
@@ -315,6 +307,20 @@ export function LandmarkCallout({
           onMouseEnter={onCardMouseEnter}
           onMouseLeave={onCardMouseLeave}
         >
+          {landmark.image && !imageError && (
+            <div className={styles.cardImageCover}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={landmark.image}
+                alt={landmark.title}
+                className={styles.cardCoverImg}
+                loading="lazy"
+                decoding="async"
+                onError={() => setImageError(true)}
+              />
+            </div>
+          )}
+
           <div className={styles.cardHeader}>
             <span className={styles.terrainTag}>
               {TERRAIN_LABELS[landmark.terrain] ?? landmark.terrain}

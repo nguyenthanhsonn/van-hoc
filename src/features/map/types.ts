@@ -184,6 +184,7 @@ export interface UseVietnamMapReturn {
   landmarks: readonly Landmark[];
   selectedLandmark: Landmark | null;
   selectedId: string | null;
+  isFlying: boolean;
   editState?: EditState | null;
   copyActiveCoordinate?: () => void;
   copyAllCoordinates?: () => void;
