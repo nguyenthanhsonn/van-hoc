@@ -257,7 +257,9 @@ export default async function LandmarkStoryPage({ params, searchParams }: Props)
     '--terrain-accent': terrain.border,
     '--terrain-strong': strong,
   } as CSSProperties;
-  const hero = availableImage(storiesContent[landmark.stories[0]?.id]?.heroImage) ?? availableImage(landmark.image);
+  const hero = landmark.id === 'nha-sinh-hoat-cham'
+    ? availableImage(landmark.image)
+    : availableImage(storiesContent[landmark.stories[0]?.id]?.heroImage) ?? availableImage(landmark.image);
 
   return (
     <div className={`${styles.readerViewport} ${serif.variable} ${sans.variable}`} style={variables} data-reader-scroll>
