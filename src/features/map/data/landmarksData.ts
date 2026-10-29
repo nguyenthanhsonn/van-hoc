@@ -42,7 +42,8 @@ export const landmarks: Landmark[] = [
     lngLat: [109.1956, 12.2653],
     zoom: 9,
     iconType: 'temple',
-    summary: 'Nơi thờ nữ thần Po Nagar, vị thần tối cao được người Chăm đời đời sùng kính.',
+    summary:
+      'Tháp Bà Ponagar (Thiên Y tháp cổ) nằm trên đồi Cù Lao bên dòng sông Cái, Nha Trang. Nơi thờ Nữ thần Po Inư Nưgar – Mẹ của xứ sở.',
     image: '/images/landmarks/po-nagar-reference.png',
     area: { radiusMeters: 250 },
     detailView: {
@@ -52,9 +53,9 @@ export const landmarks: Landmark[] = [
     stories: [
       {
         id: 'nu-than-po-nagar',
-        title: 'Nữ thần Po Nagar',
+        title: 'Po Inư Nưgar - Mẹ của xứ sở hay Bà Chúa Xứ',
         intro:
-          'Thần thoại Nữ thần Po Nagar (Mụ Dụ) kể về vị thần tối cao được sai xuống trần gian để tái lập trật tự vũ trụ, sáng tạo ra các hiện tượng tự nhiên, khai sinh tôn giáo, truyền dạy nghề nông và văn hóa xã hội, được người Chăm đời đời sùng kính.',
+          'Kể về sự khởi đầu của vũ trụ và hành trình kiến tạo thế giới, văn minh của Nữ thần Pô Naga cùng các vị thần linh theo thần thoại Chăm.',
       },
     ],
     subLandmarks: [],
@@ -71,8 +72,9 @@ export const landmarks: Landmark[] = [
     lngLat: [108.896455, 11.558092],
     zoom: 9.5,
     iconType: 'mountain',
-    summary: 'Gắn với thần thoại Po Kuk Parahimuk về ánh sáng và sự luân chuyển ngày đêm.',
-    image: '/images/landmarks/duong-nui-da-trang-reference.png',
+    summary:
+      'Gắn với thần thoại Po Kuk Parahimuk – vị thần chúa tể khôi phục ánh sáng mặt trời, mặt trăng và tái lập trật tự vũ trụ.',
+    image: '/images/landmarks/po-kuk-reference.png',
     area: { radiusMeters: 250 },
     detailView: {
       center: [108.896455, 11.558092],
@@ -81,9 +83,9 @@ export const landmarks: Landmark[] = [
     stories: [
       {
         id: 'po-kuk',
-        title: 'Po Kuk Parahimuk',
+        title: 'Po Kuk Parahimuk (Đấng sáng tạo ra vũ trụ và mọi vật trong trời đất)',
         intro:
-          'Thần thoại Po Kuk kể về những sự việc huyền bí liên quan đến Po Kuk Parahimuk, về ánh sáng và sự luân chuyển ngày đêm, qua đó lý giải nguồn gốc một số hiện tượng tự nhiên và phong tục, tín ngưỡng của người Chăm.',
+          'Kể về đấng sáng tạo muôn loài Pô Kuk Brahimưk, người khôi phục ánh sáng nhật nguyệt và sự luân chuyển ngày đêm với sự giúp sức của gà trống và loài vịt.',
       },
     ],
     subLandmarks: [],
@@ -100,7 +102,8 @@ export const landmarks: Landmark[] = [
     lngLat: [108.8963, 11.5579],
     zoom: 9.5,
     iconType: 'mountain',
-    summary: 'Ngọn núi gắn với trận đọ sức giữa Po Kei Glaong và Rak Bir Suer để bảo vệ xứ Chăm.',
+    summary:
+      'Di tích tâm linh với những khối đá thạch anh trắng tinh khiết, gắn liền với cuộc đọ sức bảo vệ xứ Chăm giữa Po Kei Glaong và Rak Bir Suer.',
     image: '/images/landmarks/yang-patao-reference.png',
     area: { radiusMeters: 500 },
     detailView: {
@@ -112,7 +115,7 @@ export const landmarks: Landmark[] = [
         id: 'yang-patao',
         title: 'Truyền thuyết núi Yang Patao',
         intro:
-          'Truyền thuyết núi Yang Patao kể về trận chiến đọ sức giữa Po Kei Glaong và kẻ ngoại bang Rak Bir Suer để bảo vệ xứ Chăm khỏi ách cai trị, từ đó giải thích nguồn gốc tên núi Yang Patao, các địa danh gò bãi và phong tục cúng tế truyền thống.',
+          'Kể về cuộc đọ sức bảo vệ dân tộc giữa Po Kei Glaong và Rak Bir Suer, từ đó lý giải nguồn gốc tên núi Yang Patao, các địa danh Gò Bể, Gò Mâm và lễ cúng Padhi truyền thống.',
       },
     ],
     subLandmarks: [],
@@ -142,19 +145,19 @@ export const landmarks: Landmark[] = [
         id: 'dewa-muno',
         title: 'Sử thi Dewa Muno',
         intro:
-          'Dewa Muno là sử thi dân gian mang màu sắc kỳ ảo, kể về hành trình tìm cha của hoàng tử Dewa Muno và những cuộc chiến với Xamurlaik. Tác phẩm mở ra một thế giới sử thi kỳ vĩ, đồng thời phản ánh những quan niệm về gia đình, quyền lực, tín ngưỡng và đời sống văn hóa của người Chăm lúc bấy giờ.',
+          'Sử thi đồ sộ mang màu sắc kỳ ảo kể về hành trình tìm cha của hoàng tử Dewa Muno, tình nghĩa huynh đệ, mối tình với công chúa hóa voi trắng Ratna và những trận đại chiến kinh thiên động địa với Xamurlaik.',
       },
       {
         id: 'hoang-tu-so-dua',
-        title: 'Hoàng tử Sọ Dừa',
+        title: 'Cei Balaok La-u (Hoàng tử Sọ Dừa)',
         intro:
-          'Truyện kể về sự ra đời kỳ lạ của Sọ Dừa (Cei Balaok La-u), đứa trẻ sinh ra tròn như gáo dừa sau khi người mẹ uống trũng nước mát trên đá. Sọ Dừa thông minh, tài trí nên đã chiếm được tình cảm của công chúa Út và cùng nàng nên duyên vợ chồng. Trải qua nhiều biến cố, công chúa Út được đoàn tụ với Sọ Dừa, khi chàng lên ngôi vua đưa đất nước đến thịnh vượng.',
+          'Truyện cổ Chăm kể về Cei Balaok La-u sinh ra tròn như gáo dừa nhưng tài hoa, khôn ngoan, cùng công chúa Út vượt qua lòng ghen ghét của hai người chị để đoàn tụ và cai trị đất nước thái bình, thịnh vượng.',
       },
       {
         id: 'nang-cha-dieng',
         title: 'Nàng Cha-điêng',
         intro:
-          'Truyện Nàng Cha-điêng lí giải nguồn gốc và ý nghĩa thiêng liêng của hai loại bánh: Sa-ka-ya tượng trưng cho trời cao, Ta-pay nung tượng trưng cho đất mẹ, qua đó gửi gắm đạo lí uống nước nhớ nguồn và lòng biết ơn sâu nặng đối với công ơn sinh thành, dưỡng dục của cha mẹ.',
+          'Truyện cổ Chăm kể về nàng Cha-điêng cùng hoàng tử út sáng tạo nên hai loại bánh Sa-ka-ya và Ta-pay nung tượng trưng cho Trời và Đất, gửi gắm tấm lòng thảo thơm và đạo nghĩa tri ân cha mẹ.',
       },
     ],
     subLandmarks: [],
@@ -164,15 +167,15 @@ export const landmarks: Landmark[] = [
     order: 5,
     terrain: 'sea',
     title: 'Cửa biển Phan Rí',
-    positionType: 'approx',
+    positionType: 'verified',
     theme: { color: '#1F6FC2', textOn: '#FFFFFF' },
-    needsReview: true,
     positionSource: 'bảng người dùng',
-    province: 'Lâm Đồng',
+    province: 'Bình Thuận',
     lngLat: [108.5623, 11.1634],
     zoom: 9.5,
     iconType: 'sea',
-    summary: 'Cửa biển gắn với tín ngưỡng thờ Pô Riyak, vị Thần Sóng của người Chăm.',
+    summary:
+      'Cửa biển và đồi cát Phan Rí gắn với truyền thuyết Po Riyak (Thần Sóng) – mảnh ghép văn hóa biển và tín ngưỡng thờ Cá Ông linh thiêng của người Chăm.',
     image: '/images/landmarks/phan-ri-reference.png',
     area: { radiusMeters: 500 },
     detailView: {
@@ -182,9 +185,9 @@ export const landmarks: Landmark[] = [
     stories: [
       {
         id: 'po-riyak',
-        title: 'Thần sóng Po Riyak',
+        title: 'Po Riyak - Thần Sóng',
         intro:
-          'Bạn có biết, đằng sau tục thờ Cá Ông của cư dân ven biển miền Trung có thể là dấu ấn của một tín ngưỡng biển lâu đời của người Chăm? Đó là câu chuyện về Pô Riyak – Thần Sóng, vị thần gắn với biển cả và đời sống tâm linh của cộng đồng Chăm. Trải qua nhiều thế kỉ, tín ngưỡng thờ Pô Riyak vẫn lưu dấu trong đời sống văn hóa Chăm, đồng thời gợi mở những kết nối thú vị giữa các cộng đồng cư dân miền Trung.',
+          'Kể về truyền thuyết Po Riyak, vị anh hùng sinh tại làng Aia Dak, vượt biển tìm đạo rồi hóa thân vào cá Ông bảo bọc người đi biển, khởi nguồn cho lễ cúng Thần Sóng hằng năm sau dịp Rija Nưgar.',
       },
     ],
     subLandmarks: [],
@@ -193,17 +196,17 @@ export const landmarks: Landmark[] = [
     id: 'nuong-ray-cham',
     order: 6,
     terrain: 'plain',
-    title: 'Nương ngô',
-    positionType: 'approx',
+    title: 'Nương rẫy Chăm',
+    positionType: 'verified',
     theme: { color: '#D6336C', textOn: '#FFFFFF' },
-    needsReview: true,
     positionSource: 'bảng người dùng',
-    province: 'Khánh Hòa',
+    province: 'Ninh Thuận',
     lngLat: [108.9311, 11.5214],
     zoom: 9.5,
     iconType: 'field',
-    summary: 'Nương ngô gắn với truyện Bò Kapil, tình anh em Kapil và Kroong.',
-    image: '/images/landmarks/nuong-ngo-reference.png',
+    summary:
+      'Gắn với Sự tích con bò thần Kapin (Limoaw Kapil), câu chuyện tình anh em nghĩa nặng và nguồn gốc phong tục tín ngưỡng Chăm Bàlamôn.',
+    image: '/images/landmarks/bo-kapil-reference.png',
     area: { radiusMeters: 500 },
     detailView: {
       center: [108.9311, 11.5214],
@@ -212,9 +215,9 @@ export const landmarks: Landmark[] = [
     stories: [
       {
         id: 'bo-kapil',
-        title: 'Bò Kapil',
+        title: 'Sự tích con bò thần Kapin',
         intro:
-          'Truyện Bò Kapil kể về tình anh em sâu nặng giữa Kapil và Kroong, đồng thời lý giải nguồn gốc tín ngưỡng thờ bò thần và những phong tục tang ma gắn liền với đời sống văn hóa của người Chăm Bàlamôn.',
+          'Kể về tình anh em thiêng liêng giữa con bò biết nói Kapil và chàng Kroong, cùng nguồn gốc tín ngưỡng thờ bò thần Nandin và nghi thức hỏa táng truyền thống của người Chăm Bàlamôn.',
       },
     ],
     subLandmarks: [],

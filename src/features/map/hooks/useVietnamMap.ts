@@ -223,7 +223,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     closeTimerRef.current = setTimeout(() => {
       setHoveredLandmarkId(null);
-    }, 200);
+    }, 450);
   }, []);
 
   const cancelClose = useCallback(() => {
@@ -1061,7 +1061,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
           // 1. Give highest priority to whichever landmark pin center is closest to the cursor
           const cursorPt = event.point;
           let closestPinId: string | null = null;
-          let minPinDist = 22; // within 22px of pin center
+          let minPinDist = 28; // within 28px of pin center
 
           for (const lm of activeLandmarks) {
             const screenPt = map.project([lm.lngLat[0], lm.lngLat[1]]);
@@ -1076,23 +1076,15 @@ export function useVietnamMap(): UseVietnamMapReturn {
             return closestPinId;
           }
 
-          // 2. If not directly over a pin, check landmark area under cursor
+          // 2. Check landmark point & label features under cursor (pins only, not area fill to prevent hovering conflict)
           const features = map.queryRenderedFeatures(event.point, {
-            layers: ['landmark-area-fill'],
+            layers: ['landmark-points', 'landmark-order', 'landmark-names'],
           });
-          if (!features || features.length === 0) return null;
-
-          if (features.length === 1) {
+          if (features && features.length > 0) {
             return String(features[0].properties?.id ?? '');
           }
 
-          // Sort by radius ascending so inner/smaller circle (e.g. 250m purple) wins over outer (500m green)
-          const sorted = [...features].sort((a, b) => {
-            const rA = Number(a.properties?.radiusMeters ?? 250);
-            const rB = Number(b.properties?.radiusMeters ?? 250);
-            return rA - rB;
-          });
-          return String(sorted[0].properties?.id ?? '');
+          return null;
         };
 
         const onLandmarkHover = (event: MapLayerMouseEvent) => {
@@ -1119,7 +1111,20 @@ export function useVietnamMap(): UseVietnamMapReturn {
 
         const onLandmarkClick = (event: MapLayerMouseEvent) => {
           const id = resolveHoveredLandmarkId(event);
-          if (id) focusLandmark(id);
+          if (id) {
+            focusLandmark(id);
+            return;
+          }
+          const areaFeatures = map.queryRenderedFeatures(event.point, { layers: ['landmark-area-fill'] });
+          if (areaFeatures && areaFeatures.length > 0) {
+            const sorted = [...areaFeatures].sort((a, b) => {
+              const rA = Number(a.properties?.radiusMeters ?? 250);
+              const rB = Number(b.properties?.radiusMeters ?? 250);
+              return rA - rB;
+            });
+            const clickedId = String(sorted[0].properties?.id ?? '');
+            if (clickedId) focusLandmark(clickedId);
+          }
         };
 
         const onClusterClick = async (event: MapLayerMouseEvent) => {
@@ -1173,8 +1178,6 @@ export function useVietnamMap(): UseVietnamMapReturn {
           'landmark-hover-point',
           'landmark-hover-order',
           'landmark-hover-names',
-          'landmark-area-fill',
-          'landmark-area-line',
         ];
         landmarkInteractiveLayers.forEach((layerId) => {
           map.on('mouseenter', layerId, onLandmarkHover);
@@ -1182,6 +1185,9 @@ export function useVietnamMap(): UseVietnamMapReturn {
           map.on('mouseleave', layerId, onLandmarkLeave);
           map.on('click', layerId, onLandmarkClick);
         });
+
+        // Area fill only handles click (to focus/select), never hover to avoid cross-landmark conflicts
+        map.on('click', 'landmark-area-fill', onLandmarkClick);
 
         map.on('mouseenter', 'clusters', onClusterEnter);
         map.on('mouseleave', 'clusters', onClusterLeave);
@@ -1202,6 +1208,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
             map.off('mouseleave', layerId, onLandmarkLeave);
             map.off('click', layerId, onLandmarkClick);
           });
+          map.off('click', 'landmark-area-fill', onLandmarkClick);
 
           map.off('mouseenter', 'clusters', onClusterEnter);
           map.off('mouseleave', 'clusters', onClusterLeave);

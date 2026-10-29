@@ -46,6 +46,7 @@ export function LandmarkCallout({
   const cardAnchorRef = useRef<HTMLDivElement | null>(null);
   const cardElementRef = useRef<HTMLDivElement | null>(null);
   const pathRef = useRef<SVGPathElement | null>(null);
+  const hoverBridgeRef = useRef<SVGPathElement | null>(null);
   const rimDotRef = useRef<SVGCircleElement | null>(null);
   const dotRef = useRef<SVGCircleElement | null>(null);
 
@@ -232,6 +233,9 @@ export function LandmarkCallout({
 
     if (pathRef.current) {
       pathRef.current.setAttribute('d', pathD);
+      if (hoverBridgeRef.current) {
+        hoverBridgeRef.current.setAttribute('d', pathD);
+      }
       // Update animation variable for slide direction
       if (cardElementRef.current) {
         const slideX = isRightSide ? '-8px' : '8px';
@@ -286,7 +290,25 @@ export function LandmarkCallout({
       {/* SVG Connecting Line branching from the rim of the circle */}
       <svg className={styles.svgLayer} aria-hidden="true">
         <path ref={pathRef} className={styles.svgPath} pathLength={1} />
-        <circle ref={rimDotRef} className={styles.svgRimDot} r={5} />
+        {/* Invisible wider stroke acting as mouse hover bridge between pin and card */}
+        <path
+          ref={hoverBridgeRef}
+          d=""
+          fill="none"
+          stroke="transparent"
+          strokeWidth={36}
+          style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+          onMouseEnter={onCardMouseEnter}
+          onMouseLeave={onCardMouseLeave}
+        />
+        <circle
+          ref={rimDotRef}
+          className={styles.svgRimDot}
+          r={6}
+          style={{ pointerEvents: 'all', cursor: 'pointer' }}
+          onMouseEnter={onCardMouseEnter}
+          onMouseLeave={onCardMouseLeave}
+        />
         <circle ref={dotRef} className={styles.svgDot} r={3.5} />
       </svg>
 

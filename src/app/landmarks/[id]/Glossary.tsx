@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useRef, type ReactNode } from 'react';
 import styles from './LandmarkStory.module.css';
 
@@ -11,7 +12,14 @@ export function Glossary({ children }: { children: ReactNode }) {
     media.addEventListener('change', resize);
     return () => media.removeEventListener('change', resize);
   }, []);
-  return <details ref={ref} className={styles.glossary} open>
-    <summary>Từ khó <span aria-hidden="true">⌄</span></summary>{children}
-  </details>;
+
+  return (
+    <details ref={ref} className={styles.glossary} open>
+      <summary className={styles.glossarySummary}>
+        <span className={styles.glossarySummaryTitle}>📖 Điển tích & Thuật ngữ Chăm</span>
+        <span className={styles.glossaryArrow} aria-hidden="true">⌄</span>
+      </summary>
+      {children}
+    </details>
+  );
 }

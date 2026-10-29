@@ -64,17 +64,22 @@ export function VietnamMap() {
     [landmarks]
   );
 
-  // Active landmark for Desktop/Tablet Callout - ONLY when hovering
+  // Active landmark for Desktop/Tablet Callout - when hovering or selected
+  const isHovering = Boolean(hoveredLandmarkId);
   const calloutLandmark = useMemo(() => {
     // Only display callout AFTER the camera has arrived at the destination
     if (isFlying) return null;
 
-    // Callout ONLY appears on hover ("chỉ khi hover vô nó mới cho hiện cái nhánh câu chuyện")
     if (hoveredLandmarkId) {
       return landmarks.find((l) => l.id === hoveredLandmarkId) ?? null;
     }
+    if (selectedId) {
+      return landmarks.find((l) => l.id === selectedId) ?? null;
+    }
     return null;
-  }, [isFlying, hoveredLandmarkId, landmarks]);
+  }, [isFlying, hoveredLandmarkId, selectedId, landmarks]);
+
+  const isPinned = !isHovering && Boolean(selectedId);
 
   return (
     <div className={styles.root} data-detail={Boolean(selectedLandmark)}>
@@ -91,18 +96,28 @@ export function VietnamMap() {
 
       <div ref={mapContainerRef} className={styles.map} />
 
-      {/* CALLOUT (Desktop & Tablet) - Only appears on hover */}
+      {/* CALLOUT (Desktop & Tablet) - Hover or Selected */}
       {calloutLandmark && (
         <LandmarkCallout
           key={calloutLandmark.id}
           landmark={calloutLandmark}
           map={mapInstance}
           containerRef={mapContainerRef}
-          isPinned={false}
-          onClose={scheduleClose}
+          isPinned={isPinned}
+          onClose={() => {
+            if (isPinned) {
+              focusLandmark(null);
+            } else {
+              scheduleClose();
+            }
+          }}
           obstacleRefs={calloutObstacles}
           onCardMouseEnter={cancelClose}
-          onCardMouseLeave={scheduleClose}
+          onCardMouseLeave={() => {
+            if (!isPinned) {
+              scheduleClose();
+            }
+          }}
         />
       )}
 
