@@ -205,7 +205,7 @@ export const landmarks: Landmark[] = [
     zoom: 9.5,
     iconType: 'field',
     summary:
-      'Gắn với Sự tích con bò thần Kapin (Limoaw Kapil), câu chuyện tình anh em nghĩa nặng và nguồn gốc phong tục tín ngưỡng Chăm Bàlamôn.',
+      'Gắn với Limo Kapil (Bò Kapil), câu chuyện tình anh em nghĩa nặng và nguồn gốc phong tục tín ngưỡng Chăm Bàlamôn.',
     image: '/images/landmarks/bo-kapil-reference.png',
     area: { radiusMeters: 500 },
     detailView: {
@@ -215,7 +215,7 @@ export const landmarks: Landmark[] = [
     stories: [
       {
         id: 'bo-kapil',
-        title: 'Sự tích con bò thần Kapin',
+        title: 'Limo Kapil (Bò Kapil)',
         intro:
           'Kể về tình anh em thiêng liêng giữa con bò biết nói Kapil và chàng Kroong, cùng nguồn gốc tín ngưỡng thờ bò thần Nandin và nghi thức hỏa táng truyền thống của người Chăm Bàlamôn.',
       },
@@ -275,7 +275,7 @@ export const landmarks: Landmark[] = [
     stories: [
       {
         id: 'bo-kapil',
-        title: 'Bò Kapil',
+        title: 'Limo Kapil (Bò Kapil)',
         intro:
           'Truyện Bò Kapil kể về tình anh em sâu nặng giữa Kapil và Kroong, đồng thời lý giải nguồn gốc tín ngưỡng thờ bò thần và những phong tục tang ma gắn liền với đời sống văn hóa của người Chăm Bàlamôn.',
       },
@@ -288,7 +288,7 @@ export const VIETNAM_LANDMARKS = landmarks;
 
 /**
  * Thứ tự đọc các tác phẩm trong hành trình (theo van.docx).
- * Nữ thần Po Nagar → Po Kuk Parahimuk → Truyền thuyết núi Yang Patao → Sử thi Dewa Muno → Thần sóng Po Riyak → Hoàng tử Sọ Dừa → Nàng Cha-điêng → Bò thần Kapin.
+ * Nữ thần Po Nagar → Po Kuk Parahimuk → Truyền thuyết núi Yang Patao → Sử thi Dewa Muno → Thần sóng Po Riyak → Hoàng tử Sọ Dừa → Nàng Cha-điêng → Limo Kapil (Bò Kapil).
  */
 export const STORY_ORDER = [
   'nu-than-po-nagar',
