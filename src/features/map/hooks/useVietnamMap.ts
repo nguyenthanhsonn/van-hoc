@@ -664,7 +664,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
 
         cleanups.push(() => hoverSubscription.unsubscribe(), () => leaveSubscription.unsubscribe());
 
-        // 2. Islands (Hoàng Sa & Trường Sa)
+        // 2. Islands (Côn Đảo, Hoàng Sa & Trường Sa)
         map.addSource('islands', {
           type: 'geojson',
           data: {
@@ -734,7 +734,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
             features: [
               ...ISLAND_LABELS.map((l) => ({
                 type: 'Feature' as const,
-                properties: { name: `${l.text}\n${l.sub}`, island: true },
+                properties: { name: `${l.text}\n${l.sub}`, island: true, textOffset: l.offset ?? [0, 0] },
                 geometry: { type: 'Point' as const, coordinates: l.lngLat },
               })),
               {
@@ -753,6 +753,7 @@ export function useVietnamMap(): UseVietnamMapReturn {
           filter: ['==', ['get', 'island'], true],
           layout: {
             'text-field': ['get', 'name'],
+            'text-offset': ['get', 'textOffset'],
             'text-font': ['Noto Sans Regular'],
             'text-size': ['interpolate', ['linear'], ['zoom'], 2, 10, 6, 13],
             'text-max-width': 24,

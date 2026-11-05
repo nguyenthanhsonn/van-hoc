@@ -90,11 +90,15 @@ export const TERRAIN_STYLE: Record<
   sea: { label: 'Biển, cửa biển', background: '#E3F0FA', border: TERRAIN_COLORS.sea, badge: TERRAIN_COLORS.sea },
 };
 
+// Tâm đảo Côn Sơn do người dùng cung cấp, theo thứ tự [kinh độ, vĩ độ].
+export const CON_DAO_CENTER: [number, number] = [106.6111, 8.6931];
+
 /**
  * Hoàng Sa (thuộc TP. Đà Nẵng) và Trường Sa (thuộc tỉnh Khánh Hòa) sau sáp nhập.
  * Toạ độ gần đúng (WGS84). Hãy đối chiếu lại với nguồn chính thức của nhóm trước khi phát hành.
  */
-export const ISLANDS: { name: string; group: 'hoang-sa' | 'truong-sa'; lngLat: [number, number] }[] = [
+export const ISLANDS: { name: string; group: 'hoang-sa' | 'truong-sa' | 'con-dao'; lngLat: [number, number] }[] = [
+  { name: 'Côn Sơn (Côn Đảo)', group: 'con-dao', lngLat: CON_DAO_CENTER },
   // Hoàng Sa
   { name: 'Đảo Hoàng Sa', group: 'hoang-sa', lngLat: [111.6, 16.54] },
   { name: 'Đảo Phú Lâm', group: 'hoang-sa', lngLat: [112.33, 16.83] },
@@ -115,7 +119,14 @@ export const ISLANDS: { name: string; group: 'hoang-sa' | 'truong-sa'; lngLat: [
   { name: 'Phan Vinh', group: 'truong-sa', lngLat: [113.88, 9.78] },
 ];
 
-export const ISLAND_LABELS = [
+export const ISLAND_LABELS: {
+  text: string;
+  sub: string;
+  lngLat: [number, number];
+  anchor: 'bottom' | 'left' | 'top';
+  offset?: [number, number];
+}[] = [
+  { text: 'Côn Đảo', sub: '(Côn Sơn, Việt Nam)', lngLat: CON_DAO_CENTER, anchor: 'top', offset: [0, 1.8] },
   { text: 'Quần đảo Hoàng Sa', sub: '(TP. Đà Nẵng, Việt Nam)', lngLat: [112.2, 17.5] as [number, number], anchor: 'bottom' as const },
   { text: 'Quần đảo Trường Sa', sub: '(Khánh Hòa, Việt Nam)', lngLat: [115.1, 9.9] as [number, number], anchor: 'left' as const },
 ];
